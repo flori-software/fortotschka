@@ -17,7 +17,7 @@ class Benutzer {
 	public $nachname;
 	public $benutzername;
 	public $kontakt; // Eigenständige Klasse
-	public $monate // Array
+	public $monate; // Array
     public $iban;
     public $bic;
 	public $admin;

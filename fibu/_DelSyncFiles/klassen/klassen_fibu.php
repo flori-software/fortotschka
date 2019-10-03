@@ -1,5 +1,5 @@
 <?php 
-class jahr {8
+class jahr {
     public $jahr;
 
     public function __construct() {
