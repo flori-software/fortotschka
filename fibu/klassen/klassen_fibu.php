@@ -62,36 +62,38 @@ class jahr {
 class teilbuchung {
     public $ID;
     public $id_buchung;
-    public $kommentar;
+    public $id_konto_soll;
+    public $id_konto_haben;
     public $id_deb_kred;
     public $summe;
 }
 
 
 class buchung {
-    public $ID;
-    public $nr;
-    public $id_konto_soll; // Array, beinhalten Objekte des Typs Teilbuchung
-    public $id_konto_haben; // Array
-    public $id_deb_kred;
-    public $summe;
+    public $ID; // Funktioniert auch als laufende Nummer
     public $datum;
     public $kommentar;
+    public $gesperrt;
+
+    // Kalkulierte Werte
+    public $id_konto_soll; // Array, beinhalten Objekte des Typs Teilbuchung
+    public $id_konto_haben; // Array
+    public $summe_soll;
+    public $summe_haben;
 
     public function formular_lesen() {
-        $this->nr               = $_POST["nr"];
-        $this->id_konto_soll    = $_POST["id_konto_soll"];
-        $this->id_konto_haben   = $_POST["id_konto_haben"];
-        $this->id_deb_kred      = $_POST["id_deb_kred"];
-        $this->summe            = zahl_pc($_POST["summe"]);
+        // Muss verändert werden
         $this->datum            = $_POST["datum"];
         $this->kommentar        = $_POST["kommentar"];
+        
     }
 
     public function speichern() {
         $this->formular_lesen();
+        /*
         $eintrag = "INSERT INTO `buchungen` (`nr`, `id_konto_soll`, `id_konto_haben`, `id_deb_kred`, `summe`, `datum`, `kommentar`)
         VALUES ('".$this->nr."', '".$this->id_konto_soll."', '".$this->id_konto_haben."', '".$this->id_deb_kred."', '".$this->summe."', '".$this->datum."', '".$this->kommentar."')";
+        */
         standard_sql($eintrag, "Eintrag der Buchung");
     }
 
@@ -100,11 +102,6 @@ class buchung {
         $abfrage = "SELECT * FROM `buchungen` WHERE `ID`='".$this->ID."'";
         if($result = $mysqli->query($abfrage)) {
             while($row = $result->fetch_object()) {
-                $this->nr               = $row->nr;
-                $this->id_konto_soll    = $row->id_konto_soll;
-                $this->id_konto_haben   = $row->id_konto_haben;
-                $this->id_deb_kred      = $row->id_deb_kred;
-                $this->summe            = zahl_de($row->summe);
                 $this->datum            = $row->datum;
                 $this->kommentar        = $row->kommentar;
             }
@@ -114,11 +111,6 @@ class buchung {
     public function bearbeiten() {
         $this->formular_lesen();
         $eintrag = "UPDATE `buchungen` Set 
-        `nr`              = '".$this->nr."',
-        `id_konto_soll`   = '".$this->id_konto_soll."',
-        `id_konto_haben`  = '".$this->id_konto_haben."',
-        `id_deb_kred`     = '".$this->id_deb_kred."',
-        `summe`           = '".zahl_pc($this->summe)."',
         `datum`           = '".$this->datum."',
         `kommentar`       = '".$this->kommentar."'
         WHERE `ID`='".$this->ID."'";
