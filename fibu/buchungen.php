@@ -9,7 +9,7 @@ echo '<script src="klassen/tools.js"></script>';
 $aktion = GetMyVar("aktion", "");
 if($aktion == "buchung_speichern") {
     $buchung = new buchung;
-    $buchung->speichern();
+    $buchung->formular_lesen();
 }
 
 // Formular
@@ -30,7 +30,8 @@ for($cnt = 0; $cnt < 20; $cnt++) {
     databasedropdown_filtered_2("kontenplan", "nr", "bezeichnung", 0, "aktiv", 1);
     echo '</select></td>
     <td><input size="40" name="kommentar'.$cnt.'"></td>
-    <td><select name="kre_debitor">';
+    <td><select name="id_deb_kred">
+    <option value="">--</option>';
     dropdown_array_personenobjekte($alle_benutzer, 0, "Debitoren", "debitoren");
     echo '</select></td>
     <td><input type="number" name="summe'.$cnt.'"></td></tr>';

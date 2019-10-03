@@ -23,35 +23,65 @@ class teilbuchung {
     public $id_buchung;
     public $kommentar;
     public $id_deb_kred;
+    public $id_konto_soll;
+    public $id_konto_haben;
     public $summe;
+    public $id_jahr;
+
+    public function formular_lesen($cnt) {
+        $this->id_konto_soll  = $_POST["id_konto_soll'.$cnt.'"] ?? 0;
+        $this->id_konto_haben = $_POST["id_konto_haben'.$cnt.'"] ?? 0;
+        $this->kommentar      = $_POST["kommentar'.$cnt.'"] ?? "";
+        $this->id_deb_kred    = $_POST["id_deb_kred'.$cnt.'"] ?? 0;
+        $this->summe          = $_POST["summe'.$cnt.'"] ?? 0;
+    }
+
+    public function speichern() {
+        $eintrag = "INSERT INTO `teilbuchungen` (`id_buchung`, `kommentar`, `id_deb_kred`, `id_konto_soll`, `id_konto_haben`, `summe`, `id_jahr`) VALUES
+        ('".$this->id_buchung."', '".$this->kommentar."', '".$this->id_deb_kred."', '".$this->id_konto_soll."', '".$this->id_konto_haben."', '".$this->summe."', '".$_SESSION["jahr_id"]."')";
+        standard_sql($eintrag, "Speichern einer Teilbuchung");
+    }
 }
 
 
 class buchung {
+
     public $ID;
-    public $nr;
-    public $id_konto_soll; // Array, beinhalten Objekte des Typs Teilbuchung
-    public $id_konto_haben; // Array
-    public $id_deb_kred;
-    public $summe;
     public $datum;
     public $kommentar;
+    public $id_jahr;
 
-    public function formular_lesen() {
-        $this->nr               = $_POST["nr"];
-        $this->id_konto_soll    = $_POST["id_konto_soll"];
-        $this->id_konto_haben   = $_POST["id_konto_haben"];
-        $this->id_deb_kred      = $_POST["id_deb_kred"];
-        $this->summe            = zahl_pc($_POST["summe"]);
-        $this->datum            = $_POST["datum"];
-        $this->kommentar        = $_POST["kommentar"];
+    public $teilbuchungen; // Array er Objekte der Klasse teilbuchung
+
+    // Errechnete Eigenschaften
+    public $summe; 
+
+    public function __construct() {
+        $this->teilbuchungen = Array();
     }
 
-    public function speichern() {
-        $this->formular_lesen();
-        $eintrag = "INSERT INTO `buchungen` (`nr`, `id_konto_soll`, `id_konto_haben`, `id_deb_kred`, `summe`, `datum`, `kommentar`)
-        VALUES ('".$this->nr."', '".$this->id_konto_soll."', '".$this->id_konto_haben."', '".$this->id_deb_kred."', '".$this->summe."', '".$this->datum."', '".$this->kommentar."')";
-        standard_sql($eintrag, "Eintrag der Buchung");
+    public function formular_lesen() {
+        $this->datum            = $_POST["datum"];
+        $this->kommentar        = $_POST["kommentar"];
+        for($cnt = 0; $cnt < 20; $cnt++) {
+            $teilbuchung = new teilbuchung;
+            $teilbuchung->formular_lesen($cnt);
+            $this->summe += $teilbuchung->summe; 
+            $this->teilbuchungen[] = $teilbuchung;
+        }
+
+        $this->speichern();
+    }
+
+    private function speichern() {
+        if($this->summe > 0) {
+            $eintrag = "INSERT INTO `buchungen` (`datum`, `kommentar`, `id_jahr`) VALUES ('".$this->datum."', '".$this->kommentar."', '".$_SESSION["jahr_id"]."')";
+            $this->ID = standard_sql($eintrag, "Eintrag der Buchung");
+        }
+        foreach ($this->teilbuchungen as $teilbuchung) {
+            $teilbuchung->id_buchung = $this->ID;
+            $teilbuchung->speichern();
+        }
     }
 
     public function lesen() {
