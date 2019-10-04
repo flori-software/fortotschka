@@ -108,6 +108,7 @@ class buchung {
     public $datum;
     public $kommentar;
     public $id_jahr;
+    public $gesperrt;
 
     public $teilbuchungen; // Array er Objekte der Klasse teilbuchung
 
@@ -133,7 +134,7 @@ class buchung {
 
     private function speichern() {
         if($this->summe > 0) {
-            $eintrag = "INSERT INTO `buchungen` (`datum`, `kommentar`, `id_jahr`) VALUES ('".$this->datum."', '".$this->kommentar."', '".$_SESSION["jahr_id"]."')";
+            $eintrag = "INSERT INTO `buchungen` (`datum`, `kommentar`, `id_jahr`, `gesperrt`) VALUES ('".$this->datum."', '".$this->kommentar."', '".$_SESSION["jahr_id"]."', 0)";
             $this->ID = standard_sql($eintrag, "Eintrag der Buchung");
         }
         foreach ($this->teilbuchungen as $teilbuchung) {
@@ -152,6 +153,7 @@ class buchung {
             while($row = $result->fetch_object()) {
                 $this->datum         = $row->datum;
                 $this->kommentar     = $row->kommentar;
+                $this->gesperrt      = $row->gesperrt;
                 $this->teilbuchungen = teilbuchung::alle_zu_einer_buchung_lesen($this->ID);
             }
         }
@@ -164,6 +166,16 @@ class buchung {
         `kommentar`       = '".$this->kommentar."'
         WHERE `ID`='".$this->ID."'";
         standard_sql($eintrag, "Bearbeiten einer Buchung");
+    }
+
+    public function loeschen() {
+        // Buchung löschen
+        $eintrag = "DELETE FROM `buchungen` WHERE `ID`=".$this->ID;
+        standard_sql($eintrag, "Loeschen eines Buchungssatzes");
+
+        // Teilbuchungen löschen
+        $eintrag = "DELETE FROM `teilbuchungen` WHERE `id_buchung`=".$this->ID;
+        standard_sql($eintrag, "Loeschen der Teilbuchungen");
     }
 
     public static function lesen_alle($datum_von = "0001-01-01", $datum_bis = "2100-12-31", $id_konto_soll = 0, $id_konto_haben = 0) {

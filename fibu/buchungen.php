@@ -7,25 +7,43 @@ include "klassen/klasse_personen.php";
 echo '<script src="klassen/tools.js"></script>';
 
 // Funktionalität
-$aktion = GetMyVar("aktion", "");
-if($aktion == "buchung_speichern") {
+$aktion          = GetMyVar("aktion", "");
+$aktion_formular = "buchung_speichern";
+
+switch ($aktion) {
+    case 'buchung_speichern':
     $buchung = new buchung;
     $buchung->formular_lesen();
-    echo 'Speichern zu Ende<p>';
-}
+    echo 'Buchungssatz gespeichert<p>';
+    break;
+    
+    case 'buchung_bearbeiten':
+        $buchung = new buchung;
+        $buchung->ID = $_GET["id"];
+        $buchung->lesen();
+        $aktion_formular = "bearbeitete_buchung_speichern";
+    break;
 
-// Formular
-$alle_benutzer = Benutzer::namen_aller_benutzer();
-#print_r($alle_benutzer);
-if($aktion == "jahr_aktivieren") {
-    $jahr = new jahr($_GET["id"]);
+    case 'bearbeitete_buchung_speichern':
+
+    break;
+
+    case 'buchung_loeschen':
+        $buchung = new buchung;
+        $buchung->ID = $_GET["id"];
+        $buchung->loeschen();
+    break;
+
+    case 'jahr_aktivieren':
+        $jahr = new jahr($_GET["id"]);
+    break;
 }
 
 echo 'Gesch&auml;ftsjahre:';
 $jahre = jahr::alle_jahre();
 echo 'Jahre gelesen<p>';
 
-
+$alle_benutzer = Benutzer::namen_aller_benutzer();
 
 foreach($jahre as $jahr) {
     echo '<a href="buchungen.php?aktion=jahr_aktivieren&id='.$jahr->ID.'">'.$jahr->jahr.'</a>&nbsp;';
@@ -38,21 +56,29 @@ if(isset($_SESSION["jahr"])) {
     onclick="eingabeformular_ein_ausblenden(1)"><p>';
     
     $buchungen = buchung::lesen_alle();
-    foreach ($buchungen as $buchung) {
+    foreach ($buchungen as $key=>$buchung) {
         echo '<table rules="all">
         <tr class="zeile_orange" style="font-size: 16px;">
         <td style="width: 15%;">'.date_to_datum($buchung->datum).'</td>
         <td style="width: 40%;">'.$buchung->kommentar.'</td>
-        <td>
-        
-        </td>
+        <td>';
+        if($buchung->gesperrt == 0) {
+            echo '<a href="buchungen.php?aktion=buchung_bearbeiten&id='.$buchung->ID.'"><img src="pics/stift.png" id="stift'.$key.'"
+            onmouseover="f_change_pic(\'stift'.$key.'\', \'pics/stift_selected.png\')"
+            onmouseout="f_change_pic(\'stift'.$key.'\', \'pics/stift.png\')"></a>&nbsp;
+            <img src="pics/loeschen.png" id="loeschen'.$key.'"
+            onmouseover="f_change_pic(\'loeschen'.$key.'\', \'pics/loeschen_selected.png\')"
+            onmouseout="f_change_pic(\'loeschen'.$key.'\', \'pics/loeschen.png\')"
+            onclick="buchung_loeschen('.$buchung->ID.')">&nbsp;';
+        }
+        echo '</td>
         </tr>
         </table>';
     }
     
     echo '<div id="eingabe_buchung" style="background-color: gold; border-radius: 20px; padding: 15px; z-index: 2; display: none;">
     <img src="pics/wegblendkreuz.png" style="position: relative; top: 0px; left: 0px;" onclick="eingabeformular_ein_ausblenden(0)">
-    <form action="buchungen.php?aktion=buchung_speichern" method="POST">
+    <form action="buchungen.php?aktion='.$aktion_formular.'" method="POST">
     <table>
     <tr><td>Datum</td><td>Kommentar</td></tr>
     <tr><td><input type="date" name="datum" style="font-size: 14px;"></td>
@@ -79,11 +105,18 @@ include "page_end.php";
 $(document).ready(function(){
     $("#eingabe_buchung").draggable({});
 })
+
 function eingabeformular_ein_ausblenden(zustand) {
     if(zustand == 0) {
         $("#eingabe_buchung").fadeOut("slow");
     } else {
         $("#eingabe_buchung").fadeIn("slow");
+    }
+}
+
+function buchung_loeschen(id) {
+    if(confirm("Soll diese Buchung dauerhaft entfernt werden?")) {
+        window.location.href = "buchungen.php?aktion=buchung_loeschen&id=" + id;
     }
 }
 </script>
