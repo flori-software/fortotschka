@@ -8,8 +8,13 @@ echo '<script src="klassen/tools.js"></script>';
 // Funktionalität
 $aktion = GetMyVar("aktion", "");
 if($aktion == "buchung_speichern") {
+    echo 'Aktion Buchung speichern<br>';
     $buchung = new buchung;
+    echo 'Objekt BUCHUNG gebildet <br>';
     $buchung->formular_lesen();
+    echo 'Speichern zu Ende<p>';
+} else {
+    echo 'Keine Aktion erkannt<br>';
 }
 
 // Formular
@@ -30,7 +35,7 @@ for($cnt = 0; $cnt < 20; $cnt++) {
     databasedropdown_filtered_2("kontenplan", "nr", "bezeichnung", 0, "aktiv", 1);
     echo '</select></td>
     <td><input size="40" name="kommentar'.$cnt.'"></td>
-    <td><select name="id_deb_kred">
+    <td><select name="id_deb_kred'.$cnt.'">
     <option value="">--</option>';
     dropdown_array_personenobjekte($alle_benutzer, 0, "Debitoren", "debitoren");
     echo '</select></td>

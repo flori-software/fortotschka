@@ -5,7 +5,6 @@ class jahr {
     public $datum_von;
     public $datum_bis;
     public $aktiv;
-
     public function __construct($id = 0) {
         if($id != 0) {   
             $this->ID = $id; 
@@ -20,14 +19,12 @@ class jahr {
             }
         }
     }
-
     public function formular_lesen() {
         $this->jahr      = $_POST["jahr"];
         $this->datum_von = $_POST["datum_von"];
         $this->datum_bis = $_POST["datum_bis"];
         $this->aktiv=1;
     }
-
     public function speichern() {
         
         $this->formular_lesen();
@@ -36,14 +33,11 @@ class jahr {
         standard_sql($eintrag, "Speichern eines Geschaeftsjahres");
         
     }
-
     public function aendern() {
         $this->jahr = $_POST["jahr"];
         $eintrag = "UPDATE `jahr` Set `jahr`='".$this->jahr."'";
         standard_sql($eintrag, "Wahl der Geschaeftsjahres");
     }
-
-
     public static function alle_jahre() {
         $mysqli  = myDatabase();
         $abfrage = "SELECT * FROM `jahr` ORDER BY `jahr` ASC";
@@ -62,39 +56,78 @@ class jahr {
 class teilbuchung {
     public $ID;
     public $id_buchung;
+    public $kommentar;
+    public $id_deb_kred;
     public $id_konto_soll;
     public $id_konto_haben;
-    public $id_deb_kred;
     public $summe;
+    public $id_jahr;
+
+    public function formular_lesen($cnt) {
+        $this->id_konto_soll  = $_POST["id_konto_soll".$cnt] ?? 0;
+        #echo 'Konto soll ist '.$_POST["id_konto_soll".$cnt].'<br>';
+        $this->id_konto_haben = $_POST["id_konto_haben".$cnt] ?? 0;
+        #echo 'Konto haben ist '.$_POST["id_konto_haben".$cnt].'<br>';
+        $this->kommentar      = $_POST["kommentar".$cnt] ?? "";
+        #echo 'Kommentar '.$_POST["kommentar'.$cnt.'"].'<br>';
+        $this->id_deb_kred    = $_POST["id_deb_kred".$cnt] ?? 0;
+        #echo 'Debitor ist '.$_POST["id_deb_kred".$cnt].'<br>';
+        $this->summe          = $_POST["summe".$cnt] ?? 0;
+        #echo 'Summe muesste sein:'.$_POST["summe0"].'<br>';
+        #echo 'Gelesene Summe ist '.$_POST["summe".$cnt].' im Feld summe'.$cnt.'<br>';
+    }
+
+    public function speichern() {
+        $eintrag = "INSERT INTO `teilbuchungen` (`id_buchung`, `kommentar`, `id_deb_kred`, `id_konto_soll`, `id_konto_haben`, `summe`, `id_jahr`) VALUES
+        ('".$this->id_buchung."', '".$this->kommentar."', '".$this->id_deb_kred."', '".$this->id_konto_soll."', '".$this->id_konto_haben."', '".$this->summe."', '".$_SESSION["jahr_id"]."')";
+        standard_sql($eintrag, "Speichern einer Teilbuchung");
+    }
 }
 
 
 class buchung {
-    public $ID; // Funktioniert auch als laufende Nummer
+
+    public $ID;
     public $datum;
     public $kommentar;
-    public $gesperrt;
+    public $id_jahr;
 
-    // Kalkulierte Werte
-    public $id_konto_soll; // Array, beinhalten Objekte des Typs Teilbuchung
-    public $id_konto_haben; // Array
-    public $summe_soll;
-    public $summe_haben;
+    public $teilbuchungen; // Array er Objekte der Klasse teilbuchung
 
-    public function formular_lesen() {
-        // Muss verändert werden
-        $this->datum            = $_POST["datum"];
-        $this->kommentar        = $_POST["kommentar"];
-        
+    // Errechnete Eigenschaften
+    public $summe; 
+
+    public function __construct() {
+        $this->teilbuchungen = Array();
     }
 
-    public function speichern() {
-        $this->formular_lesen();
-        /*
-        $eintrag = "INSERT INTO `buchungen` (`nr`, `id_konto_soll`, `id_konto_haben`, `id_deb_kred`, `summe`, `datum`, `kommentar`)
-        VALUES ('".$this->nr."', '".$this->id_konto_soll."', '".$this->id_konto_haben."', '".$this->id_deb_kred."', '".$this->summe."', '".$this->datum."', '".$this->kommentar."')";
-        */
-        standard_sql($eintrag, "Eintrag der Buchung");
+    public function formular_lesen() {
+        echo 'Lese das Formular<br>';
+        $this->datum            = $_POST["datum"];
+        $this->kommentar        = $_POST["kommentar"];
+        for($cnt = 0; $cnt < 20; $cnt++) {
+            #echo 'Überprüfe die Linie '.$cnt.'<br>';
+            $teilbuchung = new teilbuchung;
+            $teilbuchung->formular_lesen($cnt);
+            #echo 'Im Formular steht die Summe von '.$teilbuchung->summe.'<br>';
+            $this->summe += $teilbuchung->summe; 
+            #echo 'Die Gesamtsumme des Buchungssatzes liegt damit bei '.$this->summe.'<br>';
+            $this->teilbuchungen[] = $teilbuchung;
+        }
+        #echo 'Hbe alles gelesen<br>';
+        $this->speichern();
+    }
+
+    private function speichern() {
+        if($this->summe > 0) {
+            $eintrag = "INSERT INTO `buchungen` (`datum`, `kommentar`, `id_jahr`) VALUES ('".$this->datum."', '".$this->kommentar."', '".$_SESSION["jahr_id"]."')";
+            echo $eintrag;
+            $this->ID = standard_sql($eintrag, "Eintrag der Buchung");
+        }
+        foreach ($this->teilbuchungen as $teilbuchung) {
+            $teilbuchung->id_buchung = $this->ID;
+            $teilbuchung->speichern();
+        }
     }
 
     public function lesen() {
@@ -102,6 +135,11 @@ class buchung {
         $abfrage = "SELECT * FROM `buchungen` WHERE `ID`='".$this->ID."'";
         if($result = $mysqli->query($abfrage)) {
             while($row = $result->fetch_object()) {
+                $this->nr               = $row->nr;
+                $this->id_konto_soll    = $row->id_konto_soll;
+                $this->id_konto_haben   = $row->id_konto_haben;
+                $this->id_deb_kred      = $row->id_deb_kred;
+                $this->summe            = zahl_de($row->summe);
                 $this->datum            = $row->datum;
                 $this->kommentar        = $row->kommentar;
             }
@@ -111,6 +149,11 @@ class buchung {
     public function bearbeiten() {
         $this->formular_lesen();
         $eintrag = "UPDATE `buchungen` Set 
+        `nr`              = '".$this->nr."',
+        `id_konto_soll`   = '".$this->id_konto_soll."',
+        `id_konto_haben`  = '".$this->id_konto_haben."',
+        `id_deb_kred`     = '".$this->id_deb_kred."',
+        `summe`           = '".zahl_pc($this->summe)."',
         `datum`           = '".$this->datum."',
         `kommentar`       = '".$this->kommentar."'
         WHERE `ID`='".$this->ID."'";
@@ -150,23 +193,17 @@ class konto {
         $this->bezeichnung  = $_POST["bezeichnung"];
         $this->art          = $_POST["art"];
         $this->saldo_anfang = $_POST["saldo_anfang"];
-        $this->aktiv=1;
     }
 
     public function speichern() {
-        $this->formular_lesen();
-        
         $mysqli  = MyDatabase();
         $eintrag = "INSERT INTO `kontenplan` (`nr`, `bezeichnung`, `art`, `aktiv`)
         VALUES ('".$this->nr."', '".$this->bezeichnung."', '".$this->art."', '".$this->aktiv."')";
         $this->ID = standard_sql($eintrag, "Speichern des Kontos");
         $jahr = new jahr;
-        
-        $eintrag = "INSERT INTO `anfangssalden` (`id_konto`, `id_jahr`, `anfangssaldo`) VALUES 
-        ('".$this->ID."', '".$_SESSION["jahr_id"]."', '".zahl_pc($this->saldo_anfang)."')";
+        $eintrag = "INSERT INTO `anfangssalden` (`id_konto`, `jahr`, `anfangssaldo`) VALUES 
+        ('".$this->ID."', '".$jahr."', '".$this->saldo_anfang."')";
         standard_sql($eintrag, "Eintragen eines neuen Kontos");
-        
-        
     }
     
     public function deaktivieren() {
@@ -188,13 +225,8 @@ class konto {
             while ($row = $result->fetch_object()) {
                 $this->nr           = $row->nr;
                 $this->bezeichnung  = $row->bezeichnung;
-                $this->art          = $row->art;                 
-            }
-        }
-        $abfrage = "SELECT * FROM `anfangssalden` WHERE `id_konto`='".$this->ID."' AND `id_jahr`='".$_SESSION["jahr_id"]."'";
-        if ($result = $mysqli->query($abfrage)) {
-            while ($row = $result->fetch_object()) {
-                $this->saldo_anfang = $row->anfangssaldo;                
+                $this->art          = $row->art;           
+                $this->saldo_anfang = $row->saldo_anfang;       
             }
         }
     }

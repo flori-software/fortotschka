@@ -3,7 +3,6 @@ include "page_start.php";
 include "klassen/FUNCTIONS.php";
 include "klassen/klassen_fibu.php";
 
-#$aktion = $_GET["aktion"];
 $aktion=GetMyVar("aktion", "nix");
 
 if ($aktion == "jahr_anlegen") {
@@ -24,6 +23,7 @@ if($aktion == "jahr_aktivieren") {
 
 echo 'Gesch&auml;ftsjahre:';
 $jahre = jahr::alle_jahre();
+echo 'Jahre gelesen<p>';
 foreach($jahre as $jahr) {
     echo '<a href="kontenplan.php?aktion=jahr_aktivieren&id='.$jahr->ID.'">'.$jahr->jahr.'</a>&nbsp;';
 }
