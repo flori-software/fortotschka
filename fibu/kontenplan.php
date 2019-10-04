@@ -29,58 +29,56 @@ foreach($jahre as $jahr) {
 }
 if(isset($_SESSION["jahr"])) {
     echo ' - aktives Gesch&auml;ftsjahr ist '.$_SESSION["jahr"].'<br>';   
-}
-echo '<form action="kontenplan.php?aktion=jahr_anlegen" method="POST" >
-Von:&nbsp;<input type="date" name="datum_von">
-&nbsp;Bis:&nbsp;<input type="date" name="datum_bis">&nbsp;
-<input name="jahr" placeholder="Jahr">&nbsp;
-<input type="submit" value="Gesch&auml;ftsjahr anlegen"> <br> <hr>
-</form>
+
+    echo '<form action="kontenplan.php?aktion=jahr_anlegen" method="POST" >
+    Von:&nbsp;<input type="date" name="datum_von">
+    &nbsp;Bis:&nbsp;<input type="date" name="datum_bis">&nbsp;
+    <input name="jahr" placeholder="Jahr">&nbsp;
+    <input type="submit" value="Gesch&auml;ftsjahr anlegen"> <br> <hr>
+    </form>
 
 
-Kontenplan<p>
-<form action="kontenplan.php?aktion=konto_anlegen" method="POST">
-<input name="nr" placeholder="Nummer"   > <br> 
-<input name="bezeichnung" placeholder="Bezeichnung" size="100"   > <br> 
+    Kontenplan<p>
+    <form action="kontenplan.php?aktion=konto_anlegen" method="POST">
+    <input name="nr" placeholder="Nummer"   > <br> 
+    <input name="bezeichnung" placeholder="Bezeichnung" size="100"   > <br> 
 
-<select name="art">
-<option value="aktiva">Aktiva</option> 
-<option value="passiva">Passiva </option>
-<option value="aufwand">Aufwand </option>
-<option value="ertrag">Ertrag </option>
+    <select name="art">
+    <option value="aktiva">Aktiva</option> 
+    <option value="passiva">Passiva </option>
+    <option value="aufwand">Aufwand </option>
+    <option value="ertrag">Ertrag </option>
 
 
-</select> 
+    </select> 
 
-<input name="saldo_anfang" placeholder="Anfangssaldo">
-<input type="submit" value="Konto speichern"> 
+    <input name="saldo_anfang" placeholder="Anfangssaldo">
+    <input type="submit" value="Konto speichern"> 
 
-</form>
-<table>
-<tr>';
+    </form>
+    <table>
+    <tr>';
 
-$kontenarten = Array("Aktiva", "Passiva", "Ertrag", "Aufwand");
-foreach ($kontenarten as $art) {
-    echo '<td><div style="background-color: burlywood; border-radius: 20px; padding: 10px;">'.$art.'<br>';
-    $konten = konto::lesen_ueberischt_kontenart($art);
-    echo '<table>';
-    $gesamtwert_seite_anfang  = 0;
-    $gesamtwert_seite_aktuell = 0;
-    foreach ($konten as $konto) {
-        echo '<tr><td>'.$konto->nr.'</td><td>'.$konto->bezeichnung.'</td><td>'.zahl_de($konto->saldo_anfang).'</td></tr>';
-        $gesamtwert_seite_anfang += $konto->saldo_anfang;
+    $kontenarten = Array("Aktiva", "Passiva", "Ertrag", "Aufwand");
+    foreach ($kontenarten as $art) {
+        echo '<td><div style="background-color: burlywood; border-radius: 20px; padding: 10px;">'.$art.'<br>';
+        $konten = konto::lesen_ueberischt_kontenart($art);
+        echo '<table>';
+        $gesamtwert_seite_anfang  = 0;
+        $gesamtwert_seite_aktuell = 0;
+        foreach ($konten as $konto) {
+            echo '<tr><td>'.$konto->nr.'</td><td>'.$konto->bezeichnung.'</td><td>'.zahl_de($konto->saldo_anfang).'</td></tr>';
+            $gesamtwert_seite_anfang += $konto->saldo_anfang;
+        }
+        echo '<tr><td colspan="6"><hr></td></tr>
+        <tr><td colspan="2"><td>'.zahl_de($gesamtwert_seite_anfang).'</td></tr>
+        </table>
+        </div></td>';
+
     }
-    echo '<tr><td colspan="6"><hr></td></tr>
-    <tr><td colspan="2"><td>'.zahl_de($gesamtwert_seite_anfang).'</td></tr>
-    </table>
-    </div></td>';
-
+    echo '</tr>
+    </table>';
 }
-echo '</tr>
-</table>
-
-';
-
 
 include "page_end.php";
 ?>

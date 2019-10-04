@@ -10,7 +10,6 @@ session_start();
 	</head>
 	<link rel="stylesheet" type="text/css" href="beauty.css">
 	<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
- 	<link rel="stylesheet" href="/resources/demos/style.css">
 	<body>
 	<div class="mittelteil" id="mittelteil">
 	<img src="pics/titelbild.jpg" class="titelbild">

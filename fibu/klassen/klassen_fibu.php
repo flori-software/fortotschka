@@ -64,15 +64,11 @@ class teilbuchung {
     public $id_jahr;
 
     public function formular_lesen($cnt) {
-        $this->id_konto_soll  = $_POST["id_konto_soll".$cnt] ?? 0;
-        #echo 'Konto soll ist '.$_POST["id_konto_soll".$cnt].'<br>';
-        $this->id_konto_haben = $_POST["id_konto_haben".$cnt] ?? 0;
-        #echo 'Konto haben ist '.$_POST["id_konto_haben".$cnt].'<br>';
-        $this->kommentar      = $_POST["kommentar".$cnt] ?? "";
-        #echo 'Kommentar '.$_POST["kommentar'.$cnt.'"].'<br>';
-        $this->id_deb_kred    = $_POST["id_deb_kred".$cnt] ?? 0;
-        #echo 'Debitor ist '.$_POST["id_deb_kred".$cnt].'<br>';
-        $this->summe          = $_POST["summe".$cnt] ?? 0;
+        $this->id_konto_soll  = PostMyVar("id_konto_soll".$cnt, 0, "");
+        $this->id_konto_haben = PostMyVar("id_konto_haben".$cnt, 0, "");
+        $this->kommentar      = PostMyVar("kommentar".$cnt, "");
+        $this->id_deb_kred    = PostMyVar("id_deb_kred".$cnt, 0, "");
+        $this->summe          = PostMyVar("summe".$cnt, 0, "");
         #echo 'Summe muesste sein:'.$_POST["summe0"].'<br>';
         #echo 'Gelesene Summe ist '.$_POST["summe".$cnt].' im Feld summe'.$cnt.'<br>';
     }
@@ -81,6 +77,27 @@ class teilbuchung {
         $eintrag = "INSERT INTO `teilbuchungen` (`id_buchung`, `kommentar`, `id_deb_kred`, `id_konto_soll`, `id_konto_haben`, `summe`, `id_jahr`) VALUES
         ('".$this->id_buchung."', '".$this->kommentar."', '".$this->id_deb_kred."', '".$this->id_konto_soll."', '".$this->id_konto_haben."', '".$this->summe."', '".$_SESSION["jahr_id"]."')";
         standard_sql($eintrag, "Speichern einer Teilbuchung");
+    }
+
+    public static function alle_zu_einer_buchung_lesen($id_buchung) {
+        $mysqli  = MyDatabase();
+        $teilbuchungen = Array();
+        $abfrage = "SELECT * FROM `teilbuchungen` WHERE `id_buchung`=".$id_buchung;
+        if($result = $mysqli->query($abfrage)) {
+            while($row = $result->fetch_object()) {
+                $teilbuchung = new teilbuchung;
+                $teilbuchung->ID = $row->ID;
+                $teilbuchung->id_buchung     = $row->id_buchung;
+                $teilbuchung->kommentar      = $row->kommentar;
+                $teilbuchung->id_deb_kred    = $row->id_deb_kred;
+                $teilbuchung->id_konto_soll  = $row->id_konto_soll;
+                $teilbuchung->id_konto_haben = $row->id_konto_haben;
+                $teilbuchung->summe          = $row->summe;
+                $teilbuchung->id_jahr        = $row->id_jahr; 
+                $teilbuchungen[] = $teilbuchung;
+            }
+        }
+        return $teilbuchungen; 
     }
 }
 
@@ -106,27 +123,25 @@ class buchung {
         $this->datum            = $_POST["datum"];
         $this->kommentar        = $_POST["kommentar"];
         for($cnt = 0; $cnt < 20; $cnt++) {
-            #echo 'Überprüfe die Linie '.$cnt.'<br>';
             $teilbuchung = new teilbuchung;
             $teilbuchung->formular_lesen($cnt);
-            #echo 'Im Formular steht die Summe von '.$teilbuchung->summe.'<br>';
             $this->summe += $teilbuchung->summe; 
-            #echo 'Die Gesamtsumme des Buchungssatzes liegt damit bei '.$this->summe.'<br>';
             $this->teilbuchungen[] = $teilbuchung;
-        }
-        #echo 'Hbe alles gelesen<br>';
+        } 
         $this->speichern();
     }
 
     private function speichern() {
         if($this->summe > 0) {
             $eintrag = "INSERT INTO `buchungen` (`datum`, `kommentar`, `id_jahr`) VALUES ('".$this->datum."', '".$this->kommentar."', '".$_SESSION["jahr_id"]."')";
-            echo $eintrag;
             $this->ID = standard_sql($eintrag, "Eintrag der Buchung");
         }
         foreach ($this->teilbuchungen as $teilbuchung) {
             $teilbuchung->id_buchung = $this->ID;
-            $teilbuchung->speichern();
+            if($teilbuchung->summe != 0) {
+                $teilbuchung->speichern();
+            }
+            
         }
     }
 
@@ -135,13 +150,9 @@ class buchung {
         $abfrage = "SELECT * FROM `buchungen` WHERE `ID`='".$this->ID."'";
         if($result = $mysqli->query($abfrage)) {
             while($row = $result->fetch_object()) {
-                $this->nr               = $row->nr;
-                $this->id_konto_soll    = $row->id_konto_soll;
-                $this->id_konto_haben   = $row->id_konto_haben;
-                $this->id_deb_kred      = $row->id_deb_kred;
-                $this->summe            = zahl_de($row->summe);
-                $this->datum            = $row->datum;
-                $this->kommentar        = $row->kommentar;
+                $this->datum         = $row->datum;
+                $this->kommentar     = $row->kommentar;
+                $this->teilbuchungen = teilbuchung::alle_zu_einer_buchung_lesen($this->ID);
             }
         }
     }
@@ -149,11 +160,6 @@ class buchung {
     public function bearbeiten() {
         $this->formular_lesen();
         $eintrag = "UPDATE `buchungen` Set 
-        `nr`              = '".$this->nr."',
-        `id_konto_soll`   = '".$this->id_konto_soll."',
-        `id_konto_haben`  = '".$this->id_konto_haben."',
-        `id_deb_kred`     = '".$this->id_deb_kred."',
-        `summe`           = '".zahl_pc($this->summe)."',
         `datum`           = '".$this->datum."',
         `kommentar`       = '".$this->kommentar."'
         WHERE `ID`='".$this->ID."'";
