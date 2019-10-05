@@ -119,7 +119,7 @@ class buchung {
         $this->teilbuchungen = Array();
     }
 
-    public function formular_lesen() {
+    public function formular_lesen($aktion = "speichern") {
         echo 'Lese das Formular<br>';
         $this->datum            = $_POST["datum"];
         $this->kommentar        = $_POST["kommentar"];
@@ -129,7 +129,15 @@ class buchung {
             $this->summe += $teilbuchung->summe; 
             $this->teilbuchungen[] = $teilbuchung;
         } 
-        $this->speichern();
+        switch ($aktion) {
+            case 'speichern':
+                $this->speichern();
+            break;
+            
+            case 'bearbeiten':
+                $this->bearbeiten();
+            break;
+        }
     }
 
     private function speichern() {
@@ -141,8 +149,28 @@ class buchung {
             $teilbuchung->id_buchung = $this->ID;
             if($teilbuchung->summe != 0) {
                 $teilbuchung->speichern();
+            }  
+        }
+    }
+
+    private function bearbeiten() {
+        $eintrag = "UPDATE `buchungen` Set 
+        `datum`           = '".$this->datum."',
+        `kommentar`       = '".$this->kommentar."'
+        WHERE `ID`='".$this->ID."'";
+        echo $eintrag.'<br>';
+        standard_sql($eintrag, "Bearbeiten einer Buchung");
+
+        // Löschen der bisherigen Teilbuchungen
+        $eintrag = "DELETE FROM `teilbuchungen` WHERE `id_buchung`=".$this->ID;
+        standard_sql($eintrag, "Loeschen der Teilbuchungen");
+
+        // Neuspeichern der Teilbuchungen
+        foreach ($this->teilbuchungen as $teilbuchung) {
+            $teilbuchung->id_buchung = $this->ID;
+            if($teilbuchung->summe != 0) {
+                $teilbuchung->speichern();
             }
-            
         }
     }
 
@@ -157,15 +185,6 @@ class buchung {
                 $this->teilbuchungen = teilbuchung::alle_zu_einer_buchung_lesen($this->ID);
             }
         }
-    }
-
-    public function bearbeiten() {
-        $this->formular_lesen();
-        $eintrag = "UPDATE `buchungen` Set 
-        `datum`           = '".$this->datum."',
-        `kommentar`       = '".$this->kommentar."'
-        WHERE `ID`='".$this->ID."'";
-        standard_sql($eintrag, "Bearbeiten einer Buchung");
     }
 
     public function loeschen() {
