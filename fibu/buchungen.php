@@ -20,12 +20,14 @@ switch ($aktion) {
     case 'buchung_bearbeiten':
         $buchung = new buchung;
         $buchung->ID = $_GET["id"];
+        echo 'Übergebene ID der Buchung ist '.$buchung->ID.'<br>';
         $buchung->lesen();
-        $aktion_formular = "bearbeitete_buchung_speichern";
+        $aktion_formular = "bearbeitete_buchung_speichern&id=".$buchung->ID;
     break;
 
     case 'bearbeitete_buchung_speichern':
         $buchung = new buchung;
+        $buchung->ID = $_GET["id"];
         $buchung->formular_lesen("bearbeiten");
         echo 'Buchungssatz gespeichert<p>';
     break;
@@ -56,7 +58,7 @@ if(isset($_SESSION["jahr"])) {
     onmouseover="f_change_pic(\'neue_buchung\', \'pics/neu_selected.png\')"
     onmouseout="f_change_pic(\'neue_buchung\', \'pics/neu.png\')"
     onclick="eingabeformular_ein_ausblenden(1)"><p>';
-    if($aktion_formular == "bearbeitete_buchung_speichern") {
+    if(strpos($aktion_formular, "bearbeitete_buchung_speichern") > -1) {
         $display = "";
     } else {
         $display = "display: none;";
@@ -92,7 +94,7 @@ if(isset($_SESSION["jahr"])) {
 
     $buchungen = buchung::lesen_alle();
     foreach ($buchungen as $key=>$buchung) {
-        echo '<table rules="all">
+        echo 'Die Buchung hat die ID '.$buchung->ID.'<table rules="all">
         <tr class="zeile_orange" style="font-size: 16px; color: firebrick;">
         <td>Nr. '.$buchung->ID.'</td><td style="width: 15%;">'.date_to_datum($buchung->datum).'</td>
         <td style="width: 40%;">'.$buchung->kommentar.'</td>

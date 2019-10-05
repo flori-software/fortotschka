@@ -13,6 +13,9 @@ if ($aktion == "jahr_anlegen") {
 
 if($aktion == "konto_anlegen") {
     $konto = new konto;
+    echo 'Objekt Konto angelegt <br>';
+    $konto->formular_lesen();
+    echo 'Formular gelesen <br>';
     $konto->speichern();
     echo "Konto angelegt<p>";
 }
@@ -42,20 +45,16 @@ if(isset($_SESSION["jahr"])) {
     <form action="kontenplan.php?aktion=konto_anlegen" method="POST">
     <input name="nr" placeholder="Nummer"   > <br> 
     <input name="bezeichnung" placeholder="Bezeichnung" size="100"   > <br> 
-
     <select name="art">
     <option value="aktiva">Aktiva</option> 
     <option value="passiva">Passiva </option>
     <option value="aufwand">Aufwand </option>
     <option value="ertrag">Ertrag </option>
-
-
     </select> 
-
-    <input name="saldo_anfang" placeholder="Anfangssaldo">
+    <input name="saldo_anfang" type="number" step="0.01" placeholder="Anfangssaldo">
     <input type="submit" value="Konto speichern"> 
-
     </form>
+    <span class="my_title">Anfangsbest&auml;nde</span>
     <table>
     <tr>';
 
@@ -77,8 +76,31 @@ if(isset($_SESSION["jahr"])) {
 
     }
     echo '</tr>
+    </table>
+    <hr>
+    <span class="my_title">
+    Aktuelle Best&auml;nde</span>
+    <table>
+    <tr>';
+    foreach ($kontenarten as $art) {
+        echo '<td><div style="background-color: burlywood; border-radius: 20px; padding: 10px;">'.$art.'<br>';
+        $konten = konto::lesen_ueberischt_kontenart($art);
+        echo '<table>';
+        $gesamtwert_seite_anfang  = 0;
+        $gesamtwert_seite_aktuell = 0;
+        foreach ($konten as $konto) {
+            echo '<tr><td>'.$konto->nr.'</td><td>'.$konto->bezeichnung.'</td><td>'.zahl_de($konto->saldo_anfang).'</td></tr>';
+            $gesamtwert_seite_anfang += $konto->saldo_anfang;
+        }
+        echo '<tr><td colspan="6"><hr></td></tr>
+        <tr><td colspan="2"><td>'.zahl_de($gesamtwert_seite_anfang).'</td></tr>
+        </table>
+        </div></td>';
+    }
+    echo '</tr>
     </table>';
 }
+
 
 include "page_end.php";
 ?>

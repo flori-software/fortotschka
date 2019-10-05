@@ -120,4 +120,26 @@ select {
     background-color: orange;
 }
 
+.my_title {
+	font-family: Arial Black, Helvetica;
+	font-weight: bolder;	
+	font-size: 120%;
+} 
+
+.my_small_title {
+	font-family: Arial Black, Helvetica;
+	font-weight: bolder;	
+	font-size: 100%;
+}
+
+.my_very_small_title {
+	font-family: Arial Black, Helvetica;	
+	font-size: 100%;
+}
+
+.my_little_title {
+	font-family: Arial, Helvetica;
+	font-weight: bolder;	
+	font-size: 100%;
+} 
 

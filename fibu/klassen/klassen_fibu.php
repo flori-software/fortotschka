@@ -158,7 +158,7 @@ class buchung {
         `datum`           = '".$this->datum."',
         `kommentar`       = '".$this->kommentar."'
         WHERE `ID`='".$this->ID."'";
-        echo $eintrag.'<br>';
+        #echo $eintrag.'<br>';
         standard_sql($eintrag, "Bearbeiten einer Buchung");
 
         // Löschen der bisherigen Teilbuchungen
@@ -203,6 +203,7 @@ class buchung {
         $abfrage = "SELECT `ID` FROM `buchungen` WHERE `datum` >= '".$datum_von."' AND `datum` <= '".$datum_bis."' ";
         if($id_konto_soll != 0) {$abfrage .= "AND `id_konto_soll`='.$id_konto_soll.'";}
         if($id_konto_haben != 0) {$abfrage .= "AND `id_konto_haben`='.$id_konto_haben.'";}
+        $abfrage .= " ORDER BY `datum` DESC";
         if($result = $mysqli->query($abfrage)) {
             while($row = $result->fetch_object()) {
                 $buchung = new buchung;
@@ -230,6 +231,7 @@ class konto {
         $this->bezeichnung  = $_POST["bezeichnung"];
         $this->art          = $_POST["art"];
         $this->saldo_anfang = $_POST["saldo_anfang"];
+        $this->aktiv        = 1;
     }
 
     public function speichern() {
@@ -237,9 +239,9 @@ class konto {
         $eintrag = "INSERT INTO `kontenplan` (`nr`, `bezeichnung`, `art`, `aktiv`)
         VALUES ('".$this->nr."', '".$this->bezeichnung."', '".$this->art."', '".$this->aktiv."')";
         $this->ID = standard_sql($eintrag, "Speichern des Kontos");
-        $jahr = new jahr;
-        $eintrag = "INSERT INTO `anfangssalden` (`id_konto`, `jahr`, `anfangssaldo`) VALUES 
-        ('".$this->ID."', '".$jahr."', '".$this->saldo_anfang."')";
+        $eintrag = "INSERT INTO `anfangssalden` (`id_konto`, `id_jahr`, `anfangssaldo`) VALUES 
+        ('".$this->ID."', '".$_SESSION["jahr_id"]."', '".$this->saldo_anfang."')";
+        echo $eintrag;
         standard_sql($eintrag, "Eintragen eines neuen Kontos");
     }
     
@@ -263,7 +265,8 @@ class konto {
                 $this->nr           = $row->nr;
                 $this->bezeichnung  = $row->bezeichnung;
                 $this->art          = $row->art;           
-                $this->saldo_anfang = $row->saldo_anfang;       
+                $abfrage2 = "SELECT * FROM `anfangssalden` WHERE `id_jahr`=".$_SESSION["jahr_id"]." AND `id_konto`=".$this->ID;
+                $this->saldo_anfang = gesuchter_wert_sql($abfrage2, "anfangssaldo");      
             }
         }
     }
@@ -272,7 +275,7 @@ class konto {
         // art: aktiva, passiva, ertrag, aufwand
         $mysqli  = MyDatabase();
         $konten = Array();
-        $abfrage = "SELECT * FROM `kontenplan` WHERE `art`='".$art."'";
+        $abfrage = "SELECT * FROM `kontenplan` WHERE `art`='".$art."' ORDER BY `nr` ASC";
         if ($result = $mysqli->query($abfrage)) {
             while ($row = $result->fetch_object()) {
                 $konto     = new konto;
@@ -282,6 +285,11 @@ class konto {
             }
         }
         return $konten;
+    }
+
+    public function aktuelles_saldo() {
+        $anfangssaldo = $this->saldo_anfang;
+        $abfrage = "SELECT * FROM `teilbuchungen` WHERE `id_konto_soll`=".$this->ID;
     }
     
 }
