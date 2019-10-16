@@ -79,21 +79,31 @@ class teilbuchung {
         standard_sql($eintrag, "Speichern einer Teilbuchung");
     }
 
+    public function lesen() {
+        $mysqli  = MyDatabase();
+        $teilbuchungen = Array();
+        $abfrage = "SELECT * FROM `teilbuchungen` WHERE `ID`=".$this->ID;
+        if($result = $mysqli->query($abfrage)) {
+            while($row = $result->fetch_object()) {
+                $this->kommentar      = $row->kommentar;
+                $this->id_deb_kred    = $row->id_deb_kred;
+                $this->id_konto_soll  = $row->id_konto_soll;
+                $this->id_konto_haben = $row->id_konto_haben;
+                $this->summe          = $row->summe;
+                $this->id_jahr        = $row->id_jahr; 
+            }
+        }
+    }
+
     public static function alle_zu_einer_buchung_lesen($id_buchung) {
         $mysqli  = MyDatabase();
         $teilbuchungen = Array();
         $abfrage = "SELECT * FROM `teilbuchungen` WHERE `id_buchung`=".$id_buchung;
         if($result = $mysqli->query($abfrage)) {
             while($row = $result->fetch_object()) {
-                $teilbuchung = new teilbuchung;
+                $teilbuchung     = new teilbuchung;
                 $teilbuchung->ID = $row->ID;
-                $teilbuchung->id_buchung     = $row->id_buchung;
-                $teilbuchung->kommentar      = $row->kommentar;
-                $teilbuchung->id_deb_kred    = $row->id_deb_kred;
-                $teilbuchung->id_konto_soll  = $row->id_konto_soll;
-                $teilbuchung->id_konto_haben = $row->id_konto_haben;
-                $teilbuchung->summe          = $row->summe;
-                $teilbuchung->id_jahr        = $row->id_jahr; 
+                $teilbuchung->lesen();
                 $teilbuchungen[] = $teilbuchung;
             }
         }
@@ -223,6 +233,8 @@ class konto {
     public $art;           // erlaubt: aktiva, passiva, ertrag, aufwand
     public $saldo_anfang;
     public $saldo_aktuell;
+    public $summe_soll;
+    public $summe_haben;
     public $umsaetze;      // Array
     public $aktiv;
     
@@ -288,8 +300,23 @@ class konto {
     }
 
     public function aktuelles_saldo() {
-        $anfangssaldo = $this->saldo_anfang;
-        $abfrage = "SELECT * FROM `teilbuchungen` WHERE `id_konto_soll`=".$this->ID;
+        $mysqli = MyDatabase();
+        $abfrage = "SELECT * FROM `teilbuchungen` WHERE (`id_konto_soll`=".$this->ID." OR `id_konto_haben`=".$this->ID.") AND `id_jahr`=".$_SESSION["jahr_id"];
+        if($result = $mysqli->query($abfrage)) {
+            while($row = $result->fetch_object()) {
+                $teilbuchung     = new teilbuchung;
+                $teilbuchung->ID = $row->ID;
+                $teilbuchung->lesen();
+
+                // Berechnung des Saldos
+                if($teilbuchung->id_konto_soll == $this->ID) {
+                    $this->summe_soll += $teilbuchung->summe;
+                } elseif($teilbuchung->id_konto_haben == $this->ID) {
+                    $this->summe_haben += $teilbuchung->summe;
+                }
+            }
+        }
+        $this->saldo_aktuell = $this->saldo_anfang + $this->summe_soll - $this->summe_haben;
     }
     
 }
