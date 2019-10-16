@@ -278,7 +278,9 @@ class konto {
                 $this->bezeichnung  = $row->bezeichnung;
                 $this->art          = $row->art;           
                 $abfrage2 = "SELECT * FROM `anfangssalden` WHERE `id_jahr`=".$_SESSION["jahr_id"]." AND `id_konto`=".$this->ID;
-                $this->saldo_anfang = gesuchter_wert_sql($abfrage2, "anfangssaldo");      
+                $this->saldo_anfang = gesuchter_wert_sql($abfrage2, "anfangssaldo");   
+                // Berechnung der aktuellen Kontostände:
+                $this->aktuelles_saldo();   
             }
         }
     }
@@ -316,7 +318,12 @@ class konto {
                 }
             }
         }
-        $this->saldo_aktuell = $this->saldo_anfang + $this->summe_soll - $this->summe_haben;
+        if($this->art == "aktiva" || $this->art == "aufwand") {
+            $this->saldo_aktuell = $this->saldo_anfang + $this->summe_soll - $this->summe_haben;
+        } else {
+            $this->saldo_aktuell = $this->saldo_anfang - $this->summe_soll + $this->summe_haben;
+        }
+        
     }
     
 }
