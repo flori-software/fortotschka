@@ -253,7 +253,6 @@ class konto {
         $this->ID = standard_sql($eintrag, "Speichern des Kontos");
         $eintrag = "INSERT INTO `anfangssalden` (`id_konto`, `id_jahr`, `anfangssaldo`) VALUES 
         ('".$this->ID."', '".$_SESSION["jahr_id"]."', '".$this->saldo_anfang."')";
-        echo $eintrag;
         standard_sql($eintrag, "Eintragen eines neuen Kontos");
     }
     

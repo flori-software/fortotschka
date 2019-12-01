@@ -93,8 +93,14 @@ if(isset($_SESSION["jahr"])) {
     echo '</table></form></div>';
 
     $buchungen = buchung::lesen_alle();
+    $backgroundcolor = "antiquewhite";
     foreach ($buchungen as $key=>$buchung) {
-        echo 'Die Buchung hat die ID '.$buchung->ID.'<table rules="all">
+        if($backgroundcolor == "antiquewhite") {
+            $backgroundcolor = "navajowhite";
+        } else {
+            $backgroundcolor = "antiquewhite";
+        }
+        echo '<div style="background-color:'.$backgroundcolor.'; border-radius: 10px; padding: 10px;"><table rules="all">
         <tr class="zeile_orange" style="font-size: 16px; color: firebrick;">
         <td>Nr. '.$buchung->ID.'</td><td style="width: 15%;">'.date_to_datum($buchung->datum).'</td>
         <td style="width: 40%;">'.$buchung->kommentar.'</td>
@@ -111,15 +117,34 @@ if(isset($_SESSION["jahr"])) {
         echo '</td></tr></table>
         <table rules="all" style="font-size: 14px;">
         <tr><th>Soll</th><th>Haben</th><th>Kommentar</th><th>Debitor</th><th>Summe</th></tr>';
+        $buchungskonten = Array();
         foreach ($buchung->teilbuchungen as $teilbuchung) {
+            // Die Zeile mit der Teilbuchung wird dargestellt
             $konto_soll  = gesuchter_wert($teilbuchung->id_konto_soll, "kontenplan", "nr")." ".gesuchter_wert($teilbuchung->id_konto_soll, "kontenplan", "bezeichnung");
             $konto_haben = gesuchter_wert($teilbuchung->id_konto_haben, "kontenplan", "nr")." ".gesuchter_wert($teilbuchung->id_konto_haben, "kontenplan", "bezeichnung");
             $de_kreditor = gesuchter_wert($teilbuchung->id_deb_kred, "Benutzer", "benutzername");
             echo '<tr class="zeile_orange" style="color: gray;">
             <td>'.$konto_soll.'</td><td>'.$konto_haben.'</td><td>'.$teilbuchung->kommentar.'</td><td>'.$de_kreditor.'</td><td style="color: blue;">'.zahl_de($teilbuchung->summe).'</td>
             </tr>';
+
+            // Die Umsätze werden in Cluster sortiert um am Ende eine Zusammenfassung der Buchung anzuzeigen
+            if($teilbuchung->id_konto_soll  > 0) {$buchungskonten["soll"][$konto_soll] += $teilbuchung->summe;}
+            if($teilbuchung->id_konto_haben > 0) {$buchungskonten["haben"][$konto_haben] += $teilbuchung->summe;}
         }
-        echo '</table><hr>';
+        echo '</table><br>
+        <table rules="all" style="font-weight: bold;">
+        <tr><td>Konto</td><td>Soll</td><td>Haben</td></tr>';
+        
+        foreach($buchungskonten["soll"] as $key=>$zahl) {
+            echo '<tr><td>'.$key.'</td><td>'.zahl_de($zahl).'</td><td></td></tr>';
+        }
+        
+        foreach($buchungskonten["haben"] as $key=>$zahl) {
+            echo '<tr><td>'.$key.'</td><td></td><td>'.zahl_de($zahl).'</td></tr>';
+        }
+        
+        echo '</table>';
+        echo '</div>';
     }
 }
 include "page_end.php";

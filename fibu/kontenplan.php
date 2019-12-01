@@ -13,11 +13,8 @@ if ($aktion == "jahr_anlegen") {
 
 if($aktion == "konto_anlegen") {
     $konto = new konto;
-    echo 'Objekt Konto angelegt <br>';
     $konto->formular_lesen();
-    echo 'Formular gelesen <br>';
     $konto->speichern();
-    echo "Konto angelegt<p>";
 }
 
 if($aktion == "jahr_aktivieren") {
