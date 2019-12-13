@@ -15,6 +15,8 @@ switch ($aktion) {
         $buchung = new buchung;
         $buchung->formular_lesen();
         echo 'Buchungssatz gespeichert<p>';
+        // Damit das Eingabeformular nach dem Speichern einer Buchung wieder leer wird, wird die Variable $buchung hier zurückgesetzt
+        $buchung = new buchung;
     break;
     
     case 'buchung_bearbeiten':
@@ -30,6 +32,8 @@ switch ($aktion) {
         $buchung->ID = $_GET["id"];
         $buchung->formular_lesen("bearbeiten");
         echo 'Buchungssatz gespeichert<p>';
+        // Damit das Eingabeformular nach dem Speichern einer Buchung wieder leer wird, wird die Variable $buchung hier zurückgesetzt
+        $buchung = new buchung;
     break;
 
     case 'buchung_loeschen':

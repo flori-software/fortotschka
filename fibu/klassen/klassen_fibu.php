@@ -213,7 +213,7 @@ class buchung {
         $abfrage = "SELECT `ID` FROM `buchungen` WHERE `datum` >= '".$datum_von."' AND `datum` <= '".$datum_bis."' ";
         if($id_konto_soll != 0) {$abfrage .= "AND `id_konto_soll`='.$id_konto_soll.'";}
         if($id_konto_haben != 0) {$abfrage .= "AND `id_konto_haben`='.$id_konto_haben.'";}
-        $abfrage .= " ORDER BY `datum` DESC";
+        $abfrage .= " ORDER BY `datum` DESC, `ID` DESC";
         if($result = $mysqli->query($abfrage)) {
             while($row = $result->fetch_object()) {
                 $buchung = new buchung;
