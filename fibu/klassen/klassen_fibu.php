@@ -61,6 +61,8 @@ class teilbuchung {
     public $id_konto_soll;
     public $id_konto_haben;
     public $summe;
+    public $nr_spendenquittung;
+    public $gesperrt;
     public $id_jahr;
 
     public function formular_lesen($cnt) {
@@ -85,12 +87,15 @@ class teilbuchung {
         $abfrage = "SELECT * FROM `teilbuchungen` WHERE `ID`=".$this->ID;
         if($result = $mysqli->query($abfrage)) {
             while($row = $result->fetch_object()) {
-                $this->kommentar      = $row->kommentar;
-                $this->id_deb_kred    = $row->id_deb_kred;
-                $this->id_konto_soll  = $row->id_konto_soll;
-                $this->id_konto_haben = $row->id_konto_haben;
-                $this->summe          = $row->summe;
-                $this->id_jahr        = $row->id_jahr; 
+                $this->kommentar          = $row->kommentar;
+                $this->id_buchung         = $row->id_buchung;
+                $this->id_deb_kred        = $row->id_deb_kred;
+                $this->id_konto_soll      = $row->id_konto_soll;
+                $this->id_konto_haben     = $row->id_konto_haben;
+                $this->summe              = $row->summe;
+                $this->id_jahr            = $row->id_jahr; 
+                $this->nr_spendenquittung = $row->spendenquittung;
+                $this->gesperrt           = $row->gesperrt;
             }
         }
     }
@@ -108,6 +113,24 @@ class teilbuchung {
             }
         }
         return $teilbuchungen; 
+    }
+
+    public static function teilbuchungen_ohne_spendenquittung_lesen() {
+        // dabei werden nur Teilbuchungen geselen, die einem Debitor zugeordnet wurden und noch keine Nr. einer Spendenquittung haben
+        $mysqli  = MyDatabase();
+        $teilbuchungen = Array();
+        $abfrage = "SELECT * FROM `teilbuchungen` WHERE `id_deb_kred` > 0 AND `nr_spendenquittung` = 0";
+        if($result = $mysqli->query($abfrage)) {
+            while($row = $result->fetch_object()) {
+                $teilbuchung     = new teilbuchung;
+                $teilbuchung->ID = $row->ID;
+                $teilbuchung->lesen();
+                // Es werden Cluster mit der ID des Debitors gebildet, in diese Cluster kommen dann die jeweiligen Teilbuchungen
+                if(!is_array($teilbuchungen[$teilbuchung->id_deb_kred])) {$teilbuchungen[$teilbuchung->id_deb_kred] = Array();}
+                $teilbuchungen[$teilbuchung->id_deb_kred][] = $teilbuchung;
+            }
+        }
+        return $teilbuchungen;
     }
 }
 
@@ -180,6 +203,18 @@ class buchung {
             $teilbuchung->id_buchung = $this->ID;
             if($teilbuchung->summe != 0) {
                 $teilbuchung->speichern();
+            }
+        }
+    }
+
+    public function kurzinfo_lesen() {
+        // Für eine Spendenquittung wird nur das Datum und der Kommentarbenötigt
+        $mysqli = MyDatabase();
+        $abfrage = "SELECT * FROM `buchungen` WHERE `ID`='".$this->ID."'";
+        if($result = $mysqli->query($abfrage)) {
+            while($row = $result->fetch_object()) {
+                $this->datum         = $row->datum;
+                $this->kommentar     = $row->kommentar;
             }
         }
     }
@@ -327,7 +362,68 @@ class konto {
     
 }
 
+class spendenquittung {
+    public $ID;
+    public $id_benutzer;
+    public $summe;
+    public $datum;
+    public $freistellung_vom;
 
+    public function __construct($id = 0) {
+
+    }
+
+    public function lesen() {
+
+    }
+
+    public function speichern() {
+
+    }
+
+    public function teilbuchungen_spendenquittung_lesen() {
+        // Spendenquittung erschaffen
+
+        // Teilbuchungen markieren
+
+    }
+
+    public static function anzeige_offene_teilbuchungen() {
+        $cluster_teilbuchungen = teilbuchung::teilbuchungen_ohne_spendenquittung_lesen();
+        foreach($cluster_teilbuchungen as $key=>$cluster) {
+            $benutzer     = new Benutzer;
+            $benutzer->ID = $key;
+            $benutzer->get_benutzerdaten();
+            echo $benutzer->nachname.", ".$benutzer->vorname.'<br>';
+            $summe = 0;
+            echo '<table rules="all">
+            <tr><td>Datum</td><td>Kommentar</td><td>Summe</td></tr>';
+            foreach($cluster as $teilbuchung) {
+                // Das Datum ist in der Teilbuchung nicht gespeichert, sondern nur in der dazugehörigen (Hauot-)Buchung
+                $buchung     = new buchung;
+                $buchung->ID = $teilbuchung->id_buchung;
+                $buchung->kurzinfo_lesen();
+                
+                // An dieser Stelle wird unterschieden, ob die Spende im Soll oder Haben gebuchgt wurde (es kann sich um eine Rücklastschrift handeln)
+                $konto = new konto;
+                $konto->ID = $teilbuchung->id_konto_haben;
+                $konto->lesen_uebersicht();
+                if($konto->art != "ertrag") {
+                    $teilbuchung->summe = $teilbuchung->summe * -1;
+                }
+
+                $summe += $teilbuchung->summe;
+
+                echo '<tr><td>'.date_to_datum($buchung->datum).'</td><td>'.$buchung->kommentar.'</td><td>'.zahl_de($teilbuchung->summe).'</td></tr>';
+            }
+            echo '<tr><td colspan="2"></td><td>'.zahl_de($summe).'</td></tr></table><p>';
+        }
+    }
+}
+
+class ich {
+
+}
 
 
 

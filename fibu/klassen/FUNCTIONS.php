@@ -59,4 +59,9 @@ function checkbox($wert) {
     } 
 }
 
+function konsole($text) {
+	echo '<script>
+	console.log("'.$text.'");
+	</script>';
+}
 ?>

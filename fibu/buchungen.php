@@ -57,6 +57,7 @@ foreach($jahre as $jahr) {
     echo '<a href="buchungen.php?aktion=jahr_aktivieren&id='.$jahr->ID.'">'.$jahr->jahr.'</a>&nbsp;';
 }
 if(isset($_SESSION["jahr"])) {
+    echo ' - aktives Gesch&auml;ftsjahr ist '.$_SESSION["jahr"].'<br>'; 
     echo 'Buchungen&nbsp;
     <img src="pics/neu.png" id="neue_buchung"
     onmouseover="f_change_pic(\'neue_buchung\', \'pics/neu_selected.png\')"
