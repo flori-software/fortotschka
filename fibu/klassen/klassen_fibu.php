@@ -56,7 +56,7 @@ class jahr {
 class teilbuchung {
     public $ID;
     public $id_buchung;
-    public $kommentar;
+    public $kommentar;               
     public $id_deb_kred;
     public $id_konto_soll;
     public $id_konto_haben;
@@ -64,6 +64,10 @@ class teilbuchung {
     public $nr_spendenquittung;
     public $gesperrt;
     public $id_jahr;
+
+    // Wird bishr nur bei einer Spendenquittung benötigt, die Werte werden dort kalkuliert:
+    public $kommentar_hauptbuchung; 
+    public $datum; 
 
     public function formular_lesen($cnt) {
         $this->id_konto_soll  = PostMyVar("id_konto_soll".$cnt, 0, "");
@@ -364,13 +368,16 @@ class konto {
 
 class spendenquittung {
     public $ID;
-    public $id_benutzer;
+    public $debitor;                // Objekt vom Typ Benutzer
     public $summe;
     public $datum;
     public $freistellung_vom;
+    public $kontaktdaten_absender; // Objekt
+    public $absender;              // Objekt vom Typ Benutzer
+    public $teilbuchungen;         // Array
 
     public function __construct($id = 0) {
-
+        $this->teilbuchungen = Array();
     }
 
     public function lesen() {
@@ -388,22 +395,28 @@ class spendenquittung {
 
     }
 
-    public static function anzeige_offene_teilbuchungen() {
+    public static function lese_daten_offene_teilbuchungen() {
         $cluster_teilbuchungen = teilbuchung::teilbuchungen_ohne_spendenquittung_lesen();
+        $spendenquittungen     = Array();
         foreach($cluster_teilbuchungen as $key=>$cluster) {
-            $benutzer     = new Benutzer;
-            $benutzer->ID = $key;
+            $spendenquittung = new spendenquittung;
+
+            $benutzer                 = new Benutzer;
+            $benutzer->ID             = $key;
             $benutzer->get_benutzerdaten();
-            echo $benutzer->nachname.", ".$benutzer->vorname.'<br>';
-            $summe = 0;
-            echo '<table rules="all">
-            <tr><td>Datum</td><td>Kommentar</td><td>Summe</td></tr>';
+            $spendenquittung->debitor = $benutzer;
+            
+            $spendenquittung->summe = 0;
+            
             foreach($cluster as $teilbuchung) {
                 // Das Datum ist in der Teilbuchung nicht gespeichert, sondern nur in der dazugehörigen (Hauot-)Buchung
                 $buchung     = new buchung;
                 $buchung->ID = $teilbuchung->id_buchung;
                 $buchung->kurzinfo_lesen();
                 
+                $teilbuchung->datum                  = $buchung->datum;
+                $teilbuchung->kommentar_hauptbuchung = $buchung->kommentar;
+
                 // An dieser Stelle wird unterschieden, ob die Spende im Soll oder Haben gebuchgt wurde (es kann sich um eine Rücklastschrift handeln)
                 $konto = new konto;
                 $konto->ID = $teilbuchung->id_konto_haben;
@@ -412,12 +425,13 @@ class spendenquittung {
                     $teilbuchung->summe = $teilbuchung->summe * -1;
                 }
 
-                $summe += $teilbuchung->summe;
-
-                echo '<tr><td>'.date_to_datum($buchung->datum).'</td><td>'.$buchung->kommentar.'</td><td>'.zahl_de($teilbuchung->summe).'</td></tr>';
+                $spendenquittung->summe += $teilbuchung->summe;
+                $spendenquittung->teilbuchungen[] = $teilbuchung;
+                
             }
-            echo '<tr><td colspan="2"></td><td>'.zahl_de($summe).'</td></tr></table><p>';
+            $spendenquittungen[] = $spendenquittung;
         }
+        return $spendenquittungen;
     }
 }
 
