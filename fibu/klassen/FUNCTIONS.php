@@ -64,4 +64,28 @@ function konsole($text) {
 	console.log("'.$text.'");
 	</script>';
 }
+
+function formatierung_div($farbe1, $farbe2, $breite, $hoehe, $radius, $padding, $font_size = 12, $klasse = "") {
+	echo '<style>';
+	if($klasse == "") {
+		echo 'div';
+	}
+	else {
+		echo '.'.$klasse;
+	}
+	
+	echo '{';
+		if($breite != 0) {echo 'width: '.$breite.'px;';}
+		if($hoehe  != 0) {echo 'height:'.$hoehe.'px;';}
+		echo 'font-size:'.$font_size.'px;';
+		echo 'border-radius: '.$radius.'px;
+		padding: '.$padding.'px;
+		background: -webkit-linear-gradient('.$farbe1.', '.$farbe2.'); /* For Safari 5.1 to 6.0 */
+   		background: -o-linear-gradient('.$farbe1.', '.$farbe2.'); /* For Opera 11.1 to 12.0 */
+    	background: -moz-linear-gradient('.$farbe1.', '.$farbe2.'); /* For Firefox 3.6 to 15 */
+		background: linear-gradient('.$farbe1.', '.$farbe2.'); /* Standard syntax (must be last) */
+		
+	}
+	</style>';
+}
 ?>
