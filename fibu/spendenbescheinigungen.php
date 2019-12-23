@@ -14,8 +14,27 @@ echo '<script src="klassen/tools.js"></script>
     border-radius: 5px;
 }    
 
+.debitor {
+    background-color: peachpuff;
+    height: 25px;
+    border-radius: 5px;
+    padding: 3px;
+    font-size: 14px;
+}
  
 </style>';
+
+$aktion = PostMyVar("aktion", "");
+if($aktion == "erstellen_fuer_alle_mandanten") {
+    $spendenquittungen = spendenquittung::lese_daten_offene_teilbuchungen();
+    spendenquittung::spendenquittungen_erstellen($spendenquittungen);
+} elseif($aktion == "einzelbescheinigung") {
+    $id_debitor = $_GET["id_debitor"];
+    $spendenquittungen = spendenquittung::lese_daten_offene_teilbuchungen($id_debitor); // Zu erwarten ist ein Array mit einem einzigen Element - dem Cluster mit der Spendenquittung des Debitors
+    spendenquittung::spendenquittungen_erstellen($spendenquittungen);
+}
+
+
 
 echo 'Spendenbescheinigungen<p>';
 
@@ -36,9 +55,9 @@ if(isset($_SESSION["jahr"])) {
     $spendenquittungen = spendenquittung::lese_daten_offene_teilbuchungen();
 
     foreach($spendenquittungen as $spendenquittung) {
-        echo '<div style="background-color: firebrick; color: white; height: 25px; border-radius: 5px; padding: 3px; font-size: 14px;">'.
+        echo '<div class="debitor">'.
         $spendenquittung->debitor->nachname.", ".$spendenquittung->debitor->vorname.'
-        <span style="position: absolute; left: 300px;">Spendenbescheinigung erstellen</span></div>';
+        <a href="spendenbescheinigungen.php?aktion=einzelbescheinigung&id_debitor='.$spendenquittung->debitor->ID.'"><span style="position: absolute; left: 300px;">Spendenbescheinigung erstellen</span></a></div>';
         echo '<table rules="all"><tr><td>Datum</td><td>Kommentar</td><td>Summe</td></tr>';
         foreach($spendenquittung->teilbuchungen as $teilbuchung) {
             echo '<tr><td>'.date_to_datum($teilbuchung->datum).'</td><td>'.$teilbuchung->kommentar_hauptbuchung.'</td><td>'.zahl_de($teilbuchung->summe).'</td></tr>';

@@ -119,11 +119,14 @@ class teilbuchung {
         return $teilbuchungen; 
     }
 
-    public static function teilbuchungen_ohne_spendenquittung_lesen() {
+    public static function teilbuchungen_ohne_spendenquittung_lesen($id_debitor = 0) {
         // dabei werden nur Teilbuchungen geselen, die einem Debitor zugeordnet wurden und noch keine Nr. einer Spendenquittung haben
         $mysqli  = MyDatabase();
         $teilbuchungen = Array();
         $abfrage = "SELECT * FROM `teilbuchungen` WHERE `id_deb_kred` > 0 AND `nr_spendenquittung` = 0";
+        if($id_debitor != 0) {
+            $abfrage .= " AND `id_deb_kred`='".$id_debitor."'";
+        }
         if($result = $mysqli->query($abfrage)) {
             while($row = $result->fetch_object()) {
                 $teilbuchung     = new teilbuchung;
@@ -395,8 +398,12 @@ class spendenquittung {
 
     }
 
-    public static function lese_daten_offene_teilbuchungen() {
-        $cluster_teilbuchungen = teilbuchung::teilbuchungen_ohne_spendenquittung_lesen();
+    public static function spendenquittungen_erstellen($spendenquittungen) {
+        
+    }
+
+    public static function lese_daten_offene_teilbuchungen($id_debitor = 0) {
+        $cluster_teilbuchungen = teilbuchung::teilbuchungen_ohne_spendenquittung_lesen($id_debitor);
         $spendenquittungen     = Array();
         foreach($cluster_teilbuchungen as $key=>$cluster) {
             $spendenquittung = new spendenquittung;
