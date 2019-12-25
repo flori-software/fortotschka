@@ -375,8 +375,9 @@ class spendenquittung {
     public $summe;
     public $datum;
     public $freistellung_vom;
-    public $kontaktdaten_absender; // Objekt
+    public $vorstand;    
     public $absender;              // Objekt vom Typ Benutzer
+
     public $teilbuchungen;         // Array
 
     public function __construct($id = 0) {
@@ -401,14 +402,19 @@ class spendenquittung {
     public static function spendenquittungen_erstellen($spendenquittungen) {
         echo 'Erstelle Spendenquittungen<p>';
         $cnt = 0;
+        $ich = new ich;
+        $benutzer     = new Benutzer;
+        $benutzer->ID = $_SESSION["id_benutzer"];
+        $benutzer->get_benutzerdaten(); 
         foreach($spendenquittungen as $spendenquittung) {
-            echo $cnt.'<br>';
             $spendenquittung->datum = heute_datum();
             print_r($spendenquittung);
 
             $eintrag = "INSERT INTO `spendenquittungen` 
-            (`id_benutzer`, `summe`, `datum`, `freistellung_vom`, `ansemder_nachname`, `absender_vorname`, `absender_strasse`, `absender_plz`, `absender_ort`, `absender_telefonnummer`)
-            VALUES ('".$spendenquittung->debitor->ID."', '".$spendenquittung->summe."', '".$spendenquittung->datum."')";
+            (`id_benutzer`, `summe`, `datum`, `freistellung_vom`, `vorstand`, `absender_nachname`, `absender_vorname`, `absender_strasse`, `absender_plz`, `absender_ort`, `absender_telefonnummer`)
+            VALUES ('".$spendenquittung->debitor->ID."', '".$spendenquittung->summe."', '".$spendenquittung->datum."', '".$ich->freistellung_vom."', '".$ich->vorstand."', '".$benutzer->nachname."', 
+            '".$benutzer->vorname."', '".$benutzer->kontakt->strasse."', '".$benutzer->kontakt->plz."', '".$benutzer->kontakt->ort."', , '".$benutzer->kontakt->telefonnummer."')";
+            standard_sql($eintrag, "Erstellen einer Spendenquittung");
         }
     }
 
