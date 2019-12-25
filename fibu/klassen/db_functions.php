@@ -4,17 +4,22 @@
 // 3. KUNDENNAME ANHAND DER ID ERMITTELN
 
 function benutzername($id_benutzer) {
+	konsole("Suche Benutzernamen");
 	$mysqli=MyDatabase();
 		if ($id_benutzer!=0) {
-		$abfrage=("SELECT `benutzername` FROM `Benutzer` WHERE ID='.$id_benutzer.'");
-		if ($result=$mysqli->query($abfrage)) {
-			while ($row=$result->fetch_object()) {
-				$benutzername = $row->benutzername;
+			konsole("Ist nicht 0");
+			$abfrage = "SELECT `benutzername` FROM `Benutzer` WHERE ID='$id_benutzer'";
+			konsole($abfrage);
+			if ($result=$mysqli->query($abfrage)) {
+				while ($row=$result->fetch_object()) {
+					$benutzername = $row->benutzername;
+					konsole("Habe gefunden".$benutzername);
 				}	
 			}
 		}
 		else {
 		$benutzername="N.N.";
+		konsole("Habe nichts gefunden");
 		}
 	return $benutzername;
 	}

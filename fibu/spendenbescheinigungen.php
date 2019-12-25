@@ -71,9 +71,9 @@ if(isset($_SESSION["jahr"])) {
     // ANZEIGE ALLER BISHER ERSTELLTEN SPENDENQUITTUNGEN
     $spendenquittungen = spendenquittung::uebersicht_alle_spendenquittungen();
     echo '<p class="my_title">Bisher erstellte Spendenquittungen: </p>
-    <table rules="all><tr><td>Datum</td><td>Nr. Spendenquittung</td><td>Spender</td><td>Summe</td></tr>"';
+    <table rules="all"><tr style="background-color: yellow;"><td>Datum</td><td>Nr. Spendenquittung</td><td>Spender</td><td>Summe</td></tr>';
     foreach($spendenquittungen as $spendenquittung) {
-        echo '<tr><td>'.$spendenquittung->datum.'</td><td>'.$spendenquittung->nr_spendenquittung.'</td><td>'.$spendenquittung->debitor.'</td><td>'.zahl_de($spendenquittung->summe).'</td></tr>';
+        echo '<tr style="background-color: white;"><td>'.$spendenquittung->datum.'</td><td>'.$spendenquittung->nr_spendenquittung.'</td><td>'.$spendenquittung->debitor.'</td><td>'.zahl_de($spendenquittung->summe).'</td></tr>';
     }
     echo '</table>';
 }
