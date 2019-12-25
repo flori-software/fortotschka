@@ -25,7 +25,7 @@ echo '<script src="klassen/tools.js"></script>
 </style>';
 
 $aktion = GetMyVar("aktion", "");
-echo 'Gelesene Aktion ist '.$aktion.'<p>';
+
 if($aktion == "erstellen_fuer_alle_mandanten") {
     $spendenquittungen = spendenquittung::lese_daten_offene_teilbuchungen();
     spendenquittung::spendenquittungen_erstellen($spendenquittungen);
@@ -52,6 +52,8 @@ foreach($jahre as $jahr) {
 if(isset($_SESSION["jahr"])) {
     echo ' - aktives Gesch&auml;ftsjahr ist '.$_SESSION["jahr"].'<br>'; 
 
+    // ANZEIGE ALLER SPENDEN FÜR DIE BISHER KEINE SPENDENQUITTUNG ERSTELLT WURDE
+
     echo '<a href="spendenbescheinigungen.php?aktion=erstellen_fuer_alle_mandanten"><div class="alle_spendenquittungen">Spendenquittungen f&uuml;r alle Debitoren erstellen</div></a><p>';
     $spendenquittungen = spendenquittung::lese_daten_offene_teilbuchungen();
 
@@ -65,6 +67,15 @@ if(isset($_SESSION["jahr"])) {
         }
         echo '<tr><td colspan="2"></td><td>'.zahl_de($spendenquittung->summe).'</td></tr></table><p>';
     }
+
+    // ANZEIGE ALLER BISHER ERSTELLTEN SPENDENQUITTUNGEN
+    $spendenquittungen = spendenquittung::uebersicht_alle_spendenquittungen();
+    echo '<p class="my_title">Bisher erstellte Spendenquittungen: </p>
+    <table rules="all><tr><td>Datum</td><td>Nr. Spendenquittung</td><td>Spender</td><td>Summe</td></tr>"';
+    foreach($spendenquittungen as $spendenquittung) {
+        echo '<tr><td>'.$spendenquittung->datum.'</td><td>'.$spendenquittung->nr_spendenquittung.'</td><td>'.$spendenquittung->debitor.'</td><td>'.zahl_de($spendenquittung->summe).'</td></tr>';
+    }
+    echo '</table>';
 }
 
 include "page_end.php";

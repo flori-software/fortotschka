@@ -371,6 +371,7 @@ class konto {
 
 class spendenquittung {
     public $ID;
+    public $nr_spendenquittung;
     public $debitor;                // Objekt vom Typ Benutzer
     public $summe;
     public $datum;
@@ -464,6 +465,24 @@ class spendenquittung {
             }
             $spendenquittungen[] = $spendenquittung;
         }
+        return $spendenquittungen;
+    }
+
+    public static function uebersicht_alle_spendenquittungen() {
+        $spendenquittungen = Array();
+        $mysqli = MyDatabase();
+        $abfrage = "SELECT * FROM `Spendenquittungen`";
+        if($result = $mysqli->query($abfrage)) {
+            while($row = $result->fetch_object()) {
+                $spendenquittung                     = new spendenquittung;
+                $spendenquittung->debitor            = benutzername($row->id_benutzer); // Normalerweise Objekt, aber in der Übersicht der Geschwindigkeit wegen nur Name
+                $spendenquittung->summe              = $row->summe;
+                $spendenquittung->datum              = $row->datum;
+                $spendenquittung->nr_spendenquittung = $row->nr_spendenquittung;
+                
+                $spendenquittungen[] = $spendenquittung;
+            }
+        }    
         return $spendenquittungen;
     }
 }
