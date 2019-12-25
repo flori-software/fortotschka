@@ -25,9 +25,11 @@ session_start();
         $menu_inhalte[4]["name"] = "Spendenbescheinigungen";
         $menu_inhalte[4]["link"] = "spendenbescheinigungen.php";
         $menu_inhalte[5]["name"] = "Abschl&uuml;sse";
-        $menu_inhalte[5]["link"] = "abschluesse.php";
-		$menu_inhalte[6]["name"] = "Ausloggen";
-		$menu_inhalte[6]["link"] = "ausloggen.php";
+		$menu_inhalte[5]["link"] = "abschluesse.php";
+		$menu_inhalte[6]["name"] = "Verein";
+		$menu_inhalte[6]["link"] = "verein.php";
+		$menu_inhalte[7]["name"] = "Ausloggen";
+		$menu_inhalte[7]["link"] = "ausloggen.php";
 	}
 
 	foreach($menu_inhalte as $key=>$menupunkt) {

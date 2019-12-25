@@ -482,6 +482,32 @@ class ich {
             }
         }
     }
+
+    public function formular_lesen() {
+        $this->vereinsname                  = $_POST["vereinsname"];
+        $this->adresszeile                  = $_POST["adresszeile"];
+        $this->strasse                      = $_POST["strasse"];
+        $this->plz                          = $_POST["plz"];
+        $this->ort                          = $_POST["ort"];
+        $this->telefonnummer                = $_POST["telefonnummer"];
+        $this->email                        = $_POST["email"];
+        $this->vorstand                     = $_POST["vorstand"];
+        $this->freistellungsbescheid_vom    = $_POST["freistellungsbescheid_vom"];
+    }
+
+    public function bearbeiten() {
+        $eintrag = "UPDATE `ich` Set
+        `vereinsname`               = '".$this->vereinsname."',
+        `adresszeile`               = '".$this->adresszeile."',           
+        `strasse`                   = '".$this->strasse."',       
+        `plz`                       = '".$this->plz."',       
+        `ort`                       = '".$this->ort."',
+        `telefonnummer`             = '".$this->telefonnummer."',       
+        `email`                     = '".$this->email."',          
+        `vorstand`                  = '".$this->vorstand."',         
+        `freistellungsbescheid_vom` = '".$this->freistellungsbescheid_vom."'";
+        standard_sql($eintrag, "Bearbeiten der Vereinsdaten");
+    }
 }
 
 
