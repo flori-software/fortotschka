@@ -399,7 +399,17 @@ class spendenquittung {
     }
 
     public static function spendenquittungen_erstellen($spendenquittungen) {
-        
+        echo 'Erstelle Spendenquittungen<p>';
+        $cnt = 0;
+        foreach($spendenquittungen as $spendenquittung) {
+            echo $cnt.'<br>';
+            $spendenquittung->datum = heute_datum();
+            print_r($spendenquittung);
+
+            $eintrag = "INSERT INTO `spendenquittungen` 
+            (`id_benutzer`, `summe`, `datum`, `freistellung_vom`, `ansemder_nachname`, `absender_vorname`, `absender_strasse`, `absender_plz`, `absender_ort`, `absender_telefonnummer`)
+            VALUES ('".$spendenquittung->debitor->ID."', '".$spendenquittung->summe."', '".$spendenquittung->datum."')";
+        }
     }
 
     public static function lese_daten_offene_teilbuchungen($id_debitor = 0) {
@@ -443,7 +453,35 @@ class spendenquittung {
 }
 
 class ich {
+    public $ID;
+    public $vereinsname;
+    public $adresszeile;
+    public $strasse;
+    public $plz;
+    public $ort;
+    public $telefonnummer;
+    public $email;
+    public $vorstand;
+    public $freistellungsbescheid_vom;
 
+    public function __construct() {
+        $mysqli = MyDatabase();
+        $abfrage = "SELECT * FROM `ich`";
+        if($result = $mysqli->query($abfrage)) {
+            while($row = $result->fetch_object()) {
+                $this->ID                           = $row->ID;
+                $this->vereinsname                  = $row->vereinsname;
+                $this->adresszeile                  = $row->adresszeile;
+                $this->strasse                      = $row->strasse;
+                $this->plz                          = $row->plz;
+                $this->ort                          = $row->ort;
+                $this->telefonnummer                = $row->telefonnummer;
+                $this->email                        = $row->email;
+                $this->vorstand                     = $row->vorstand;
+                $this->freistellungsbescheid_vom    = $row->freistellungsbescheid_vom;
+            }
+        }
+    }
 }
 
 

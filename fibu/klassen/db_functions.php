@@ -3,40 +3,21 @@
 
 // 3. KUNDENNAME ANHAND DER ID ERMITTELN
 
-function kundenname($kunde) {
+function benutzername($id_benutzer) {
 	$mysqli=MyDatabase();
-		if ($kunde!=0) {
-		$abfrage=("SELECT kundecode FROM Kunden WHERE ID=$kunde");
+		if ($id_benutzer!=0) {
+		$abfrage=("SELECT `benutzername` FROM `Benutzer` WHERE ID='.$id_benutzer.'");
 		if ($result=$mysqli->query($abfrage)) {
 			while ($row=$result->fetch_object()) {
-				$kundecode = c3po::lesen($row->kundecode);
+				$benutzername = $row->benutzername;
 				}	
 			}
 		}
 		else {
-		$kundecode="N.N.";
+		$benutzername="N.N.";
 		}
-	return $kundecode;
+	return $benutzername;
 	}
-
-// 3 B . MITARBEITERCODE ANHAND DER ID ERMITTELN
-
-function mitarbeitercode($angestellter) {
-	$mysqli=MyDatabase();
-	if ($angestellter!=0) {
-		$abfrage=("SELECT `mitarbeiter` FROM `Mitarbeiter` WHERE ID='$angestellter'");
-		if ($result=$mysqli->query($abfrage)) {
-			while ($row=$result->fetch_object()) {
-				$mitarbeitercode = c3po::lesen($row->mitarbeiter);
-			}	
-			
-		}
-	}
-	else {
-	$mitarbeitercode="N.N.";
-	}
-	return $mitarbeitercode;
-}
 
 // 3 C. EIN ELEMENT AUS BELIEBIGER TABELLE NACH ID ERMITTELN
 
