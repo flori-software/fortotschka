@@ -383,14 +383,36 @@ class spendenquittung {
 
     public function __construct($id = 0) {
         $this->teilbuchungen = Array();
+        if($id != 0) {
+            $this->ID = $id;
+            $this->lesen();
+        }
     }
 
     public function lesen() {
+        $mysqli = MyDatabase();
+        $abfrage = "SELECT * FROM `spendenquittungen` WHERE `ID`='".$this->ID."'";
+        if($result = $mysqli->query($abfrage)) {
+            while($row = $result->fetch_object()) {
+                $this->nr_spendenquittung = $row->nr_spendenquittung;
+                $this->summe              = $row->summe;
+                $this->datum              = $row->datum;
+                $this->freistellung_vom   = $row->freistellung_vom;
+                $this->vorstand           = $row->vorstand;
+                
+                $debitor     = new Benutzer;
+                $debitor->ID = $row->id_benutzer;
+                $debitor->get_benutzerdaten();
 
-    }
-
-    public function speichern() {
-
+                $absender                         = new Benutzer;
+                $absender->nachname               = $row->absender_nachname;
+                $absender->vorname                = $row->absender_vorname;
+                $absender->kontakt->strasse       = $row->absender_strasse;
+                $absender->kontakt->plz           = $row->absender_plz;
+                $absender->kontakt->ort           = $row->absender_ort;
+                $absender->kontakt->telefonnummer = $row->absender_telefonnummer;
+            }
+        }
     }
 
     public function teilbuchungen_spendenquittung_lesen() {
@@ -475,6 +497,7 @@ class spendenquittung {
         if($result = $mysqli->query($abfrage)) {
             while($row = $result->fetch_object()) {
                 $spendenquittung                     = new spendenquittung;
+                $spendenquittung->ID                 = $row->ID;
                 $spendenquittung->debitor            = benutzername($row->id_benutzer); // Normalerweise Objekt, aber in der Übersicht der Geschwindigkeit wegen nur Name
                 $spendenquittung->summe              = $row->summe;
                 $spendenquittung->datum              = $row->datum;

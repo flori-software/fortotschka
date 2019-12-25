@@ -28,7 +28,6 @@ class Benutzer {
 
 	public function __construct() {
 		$this->monate = Array();
-        
 		$this->kontakt = new Kontaktdaten;
 	}
 
