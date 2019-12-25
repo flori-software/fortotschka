@@ -400,21 +400,31 @@ class spendenquittung {
     }
 
     public static function spendenquittungen_erstellen($spendenquittungen) {
-        echo 'Erstelle Spendenquittungen<p>';
-        $cnt = 0;
         $ich = new ich;
         $benutzer     = new Benutzer;
         $benutzer->ID = $_SESSION["id_benutzer"];
         $benutzer->get_benutzerdaten(); 
         foreach($spendenquittungen as $spendenquittung) {
             $spendenquittung->datum = heute_datum();
-            print_r($spendenquittung);
 
+            // Eintrag der Stammdaten der Spendenquittung
             $eintrag = "INSERT INTO `spendenquittungen` 
             (`id_benutzer`, `summe`, `datum`, `freistellung_vom`, `vorstand`, `absender_nachname`, `absender_vorname`, `absender_strasse`, `absender_plz`, `absender_ort`, `absender_telefonnummer`)
-            VALUES ('".$spendenquittung->debitor->ID."', '".$spendenquittung->summe."', '".$spendenquittung->datum."', '".$ich->freistellung_vom."', '".$ich->vorstand."', '".$benutzer->nachname."', 
-            '".$benutzer->vorname."', '".$benutzer->kontakt->strasse."', '".$benutzer->kontakt->plz."', '".$benutzer->kontakt->ort."', , '".$benutzer->kontakt->telefonnummer."')";
-            standard_sql($eintrag, "Erstellen einer Spendenquittung");
+            VALUES ('".$spendenquittung->debitor->ID."', '".$spendenquittung->summe."', '".$spendenquittung->datum."', '".$ich->freistellungsbescheid_vom."', '".$ich->vorstand."', '".$benutzer->nachname."', 
+            '".$benutzer->vorname."', '".$benutzer->kontakt->strasse."', '".$benutzer->kontakt->plz."', '".$benutzer->kontakt->ort."', '".$benutzer->kontakt->telefonnummer."')";
+            $id_spendenquittung = standard_sql($eintrag, "Erstellen einer Spendenquittung");
+
+            // Eintrag der Nummer der Spendenquittung
+            $jahr = jahr_aus_datum(heute_datum());
+            $nr_spendenquittung = $jahr."_".$id_spendenquittung;
+            $eintrag = "UPDATE `spendenquittungen` Set  `nr_spendenquittung`='".$nr_spendenquittung."' WHERE `ID`='".$id_spendenquittung."'";
+            standard_sql($eintrag, "Eintrag der Nummer der Spendenquittung");
+
+            // Markieren der Teilbuchungen mit der Nr. der Spendenquittung
+            foreach($spendenquittung->teilbuchungen as $teilbuchung) {
+                $eintrag = "UPDATE `teilbuchungen` Set `nr_spendenquittung`='".$nr_spendenquittung."' WHERE `ID`='".$teilbuchung->ID."'";
+                standard_sql($eintrag, "Eintrag der Nummer der Spendenquittung in die Teilbuchung");
+            }
         }
     }
 

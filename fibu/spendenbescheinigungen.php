@@ -27,12 +27,10 @@ echo '<script src="klassen/tools.js"></script>
 $aktion = GetMyVar("aktion", "");
 echo 'Gelesene Aktion ist '.$aktion.'<p>';
 if($aktion == "erstellen_fuer_alle_mandanten") {
-    echo 'Erstelle Spendenquittungen f&uuml;r alle Debitoren<br>';
     $spendenquittungen = spendenquittung::lese_daten_offene_teilbuchungen();
     spendenquittung::spendenquittungen_erstellen($spendenquittungen);
 } elseif($aktion == "einzelbescheinigung") {
     $id_debitor = $_GET["id_debitor"];
-    echo 'Gelesene id des Debitoren ist '.$id_debitor.'<br>';
     $spendenquittungen = spendenquittung::lese_daten_offene_teilbuchungen($id_debitor); // Zu erwarten ist ein Array mit einem einzigen Element - dem Cluster mit der Spendenquittung des Debitors
     spendenquittung::spendenquittungen_erstellen($spendenquittungen);
 }
