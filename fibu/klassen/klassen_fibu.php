@@ -325,6 +325,10 @@ class konto {
             }
         }
     }
+
+    public function lesen_kontenart() {
+        $this->art = gesuchter_wert($this->ID, "kontenplan", "art");
+    }
     
     public static function lesen_ueberischt_kontenart($art) {
         // art: aktiva, passiva, ertrag, aufwand
@@ -453,7 +457,10 @@ class spendenquittung {
 
     public static function lese_daten_offene_teilbuchungen($id_debitor = 0) {
         $cluster_teilbuchungen = teilbuchung::teilbuchungen_ohne_spendenquittung_lesen($id_debitor);
+        
         $spendenquittungen     = Array();
+        $start = time();
+        
         foreach($cluster_teilbuchungen as $key=>$cluster) {
             $spendenquittung = new spendenquittung;
 
@@ -464,7 +471,7 @@ class spendenquittung {
             
             $spendenquittung->summe = 0;
             
-            foreach($cluster as $teilbuchung) {
+            foreach($cluster as $nr=>$teilbuchung) {
                 // Das Datum ist in der Teilbuchung nicht gespeichert, sondern nur in der dazugehörigen (Hauot-)Buchung
                 $buchung     = new buchung;
                 $buchung->ID = $teilbuchung->id_buchung;
@@ -474,20 +481,23 @@ class spendenquittung {
                 $teilbuchung->kommentar_hauptbuchung = $buchung->kommentar;
 
                 // An dieser Stelle wird unterschieden, ob die Spende im Soll oder Haben gebuchgt wurde (es kann sich um eine Rücklastschrift handeln)
+
+                
                 $konto = new konto;
                 $konto->ID = $teilbuchung->id_konto_haben;
-                $konto->lesen_uebersicht();
+                
+                $konto->lesen_kontenart();
                 if($konto->art != "ertrag") {
                     $teilbuchung->summe = $teilbuchung->summe * -1;
                 }
-
+                
                 $spendenquittung->summe += $teilbuchung->summe;
                 $spendenquittung->teilbuchungen[] = $teilbuchung;
-                
             }
+            
             $spendenquittungen[] = $spendenquittung;
         }
-        return $spendenquittungen;
+        return $spendenquittungen;  
     }
 
     public static function uebersicht_alle_spendenquittungen() {
