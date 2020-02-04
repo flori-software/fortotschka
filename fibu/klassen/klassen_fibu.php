@@ -480,9 +480,7 @@ class spendenquittung {
                 $teilbuchung->datum                  = $buchung->datum;
                 $teilbuchung->kommentar_hauptbuchung = $buchung->kommentar;
 
-                // An dieser Stelle wird unterschieden, ob die Spende im Soll oder Haben gebuchgt wurde (es kann sich um eine Rücklastschrift handeln)
-
-                
+                // An dieser Stelle wird unterschieden, ob die Spende im Soll oder Haben gebuchgt wurde (es kann sich um eine Rücklastschrift handeln)    
                 $konto = new konto;
                 $konto->ID = $teilbuchung->id_konto_haben;
                 

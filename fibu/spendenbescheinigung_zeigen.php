@@ -8,5 +8,7 @@ include "klassen/klasse_pdf_spendenquittung.php";
 
 $spendenquittung = new spendenquittung($_GET["id"]);
 
+$pdf_dokument    = new pdf_spendenquittung($spendenquittung);
+$pdf_dokument->Output(); 
 
 ?>
