@@ -404,17 +404,17 @@ class spendenquittung {
                 $this->freistellung_vom   = $row->freistellung_vom;
                 $this->vorstand           = $row->vorstand;
                 
-                $debitor     = new Benutzer;
-                $debitor->ID = $row->id_benutzer;
-                $debitor->get_benutzerdaten();
-
-                $absender                         = new Benutzer;
-                $absender->nachname               = $row->absender_nachname;
-                $absender->vorname                = $row->absender_vorname;
-                $absender->kontakt->strasse       = $row->absender_strasse;
-                $absender->kontakt->plz           = $row->absender_plz;
-                $absender->kontakt->ort           = $row->absender_ort;
-                $absender->kontakt->telefonnummer = $row->absender_telefonnummer;
+                $this->debitor     = new Benutzer;
+                $this->debitor->ID = $row->id_benutzer;
+                $this->debitor->get_benutzerdaten();
+                
+                $this->absender                         = new Benutzer;
+                $this->absender->nachname               = $row->absender_nachname;
+                $this->absender->vorname                = $row->absender_vorname;
+                $this->absender->kontakt->strasse       = $row->absender_strasse;
+                $this->absender->kontakt->plz           = $row->absender_plz;
+                $this->absender->kontakt->ort           = $row->absender_ort;
+                $this->absender->kontakt->telefonnummer = $row->absender_telefonnummer;
             }
         }
     }

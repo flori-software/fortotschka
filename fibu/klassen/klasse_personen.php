@@ -174,9 +174,7 @@ class Benutzer {
                 
                 $this->iban             = $row->iban;              
                 $this->bic              = $row->bic;  
-                
-                
-                
+
                 $this->monate[1]        = $row->monate1;               
                 $this->monate[2]        = $row->monate2;            
                 $this->monate[3]        = $row->monate3;              
