@@ -185,15 +185,19 @@ class buchung {
     }
 
     private function speichern() {
-        if($this->summe > 0) {
+        if($this->summe > 0 && $this->datum != "0000-00-00") {
             $eintrag = "INSERT INTO `buchungen` (`datum`, `kommentar`, `id_jahr`, `gesperrt`) VALUES ('".$this->datum."', '".$this->kommentar."', '".$_SESSION["jahr_id"]."', 0)";
             $this->ID = standard_sql($eintrag, "Eintrag der Buchung");
-        }
-        foreach ($this->teilbuchungen as $teilbuchung) {
-            $teilbuchung->id_buchung = $this->ID;
-            if($teilbuchung->summe != 0) {
-                $teilbuchung->speichern();
-            }  
+
+            // Schreiben der ID in die Teilbuchungen
+            foreach ($this->teilbuchungen as $teilbuchung) {
+                $teilbuchung->id_buchung = $this->ID;
+                if($teilbuchung->summe != 0) {
+                    $teilbuchung->speichern();
+                }  
+            }
+        } else {
+            echo "Die Buchung konnte nicht gespeichert werden, da sie nicht korrekt war (z.B. Summe = 0 oder kein g&uuml;ltiges Datum.";
         }
     }
 
@@ -437,7 +441,7 @@ class spendenquittung {
                 $this->teilbuchungen[] = $teilbuchung;
 
                 // Jetzt wird noch das Datum der ersten und der letzten Teilbuchung bestimmt
-                if((isset($this->datum_erste_spende) && $teilbuchung->datum < $this->datum_erste_spende) || !isset($this->datum_erste_spende)) {$this->datum_erste_spende = $teilbuchung->datum;}
+                if(((isset($this->datum_erste_spende) && $teilbuchung->datum < $this->datum_erste_spende) || !isset($this->datum_erste_spende)) && $teilbuchung->datum != "0000-00-00") {$this->datum_erste_spende = $teilbuchung->datum;}
                 if((isset($this->datum_letzte_spende) && $teilbuchung->datum > $this->datum_letzte_spende) || !isset($this->datum_letzte_spende)) {$this->datum_letzte_spende = $teilbuchung->datum;}
             }
         }

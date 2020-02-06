@@ -32,7 +32,9 @@ class pdf_spendenquittung extends FPDF {
             $this->Cell(50, 5, utf8_decode($inhalt), 0);
             $y += 5;
         }
+    }
 
+    private function mittelteil() {
         // Überschrift
         $this->SetXY(10, 28);
         $this->SetFont("Arial", "B", 14);
@@ -41,13 +43,11 @@ class pdf_spendenquittung extends FPDF {
         $this->SetXY(10, 35);
         $this->MultiCell(140, 25, utf8_decode("Art der Zuwendung: Geldzuwendung"), 0);
 
-        // Datum
+        // Nummer und Datum Datum
         $this->SetFont("Arial", "", 11);
         $this->SetXY(10, 42);
-        $this->MultiCell(140, 25, date_to_datum($this->daten->datum), 0);
-    }
+        $this->MultiCell(140, 25, "Spendenbescheinigung Nr. ".$this->daten->nr_spendenquittung." vom ".date_to_datum($this->daten->datum), 0);
 
-    private function mittelteil() {
         // Definition der Konstante EUR für korrekte Darstellung des Eurozeichens
 		if(!defined(EUR)) {
 			define(EUR, chr(128));
