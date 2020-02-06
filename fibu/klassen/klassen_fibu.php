@@ -100,6 +100,10 @@ class teilbuchung {
                 $this->id_jahr            = $row->id_jahr; 
                 $this->nr_spendenquittung = $row->spendenquittung;
                 $this->gesperrt           = $row->gesperrt;
+
+                // Datum wird anhand der Hauptbuchung ermittelt:
+                $this->datum                  = gesuchter_wert($this->id_buchung, "buchungen", "datum");
+                $this->kommentar_hauptbuchung = gesuchter_wert($this->id_buchung, "buchungen", "kommentar");
             }
         }
     }
@@ -384,6 +388,8 @@ class spendenquittung {
     public $absender;              // Objekt vom Typ Benutzer
 
     public $teilbuchungen;         // Array
+    public $datum_erste_spende;
+    public $datum_letzte_spende;
 
     public function __construct($id = 0) {
         $this->teilbuchungen = Array();
@@ -417,13 +423,24 @@ class spendenquittung {
                 $this->absender->kontakt->telefonnummer = $row->absender_telefonnummer;
             }
         }
+        $this->teilbuchungen_spendenquittung_lesen();
     }
 
     public function teilbuchungen_spendenquittung_lesen() {
-        // Spendenquittung erschaffen
+        $mysqli  = MyDatabase();
+        $abfrage = "SELECT `ID` FROM `teilbuchungen` WHERE `nr_spendenquittung` = '".$this->nr_spendenquittung."'";
+        if($result = $mysqli->query($abfrage)) {
+            while($row = $result->fetch_object()) {
+                $teilbuchung     = new teilbuchung;
+                $teilbuchung->ID = $row->ID;
+                $teilbuchung->lesen();
+                $this->teilbuchungen[] = $teilbuchung;
 
-        // Teilbuchungen markieren
-
+                // Jetzt wird noch das Datum der ersten und der letzten Teilbuchung bestimmt
+                if((isset($this->datum_erste_spende) && $teilbuchung->datum < $this->datum_erste_spende) || !isset($this->datum_erste_spende)) {$this->datum_erste_spende = $teilbuchung->datum;}
+                if((isset($this->datum_letzte_spende) && $teilbuchung->datum > $this->datum_letzte_spende) || !isset($this->datum_letzte_spende)) {$this->datum_letzte_spende = $teilbuchung->datum;}
+            }
+        }
     }
 
     public static function spendenquittungen_erstellen($spendenquittungen) {

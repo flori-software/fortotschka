@@ -16,12 +16,12 @@ class pdf_spendenquittung extends FPDF {
         // Vereinsanschrift
         $ich = new ich;
         $inhalte   = Array();
-        $inhalte[] = $ich->vereinsname;
-        $inhalte[] = $daten->absender->nachname." ".$daten->absender->vorname;
-        $inhalte[] = $daten->absender->kontakt->strasse;
-        $inhalte[] = $daten->absender->kontakt->plz." ".$daten->absender->kontakt->ort;
-        $inhalte[] = $daten->kontakt->absender->telefonnummer;
-        $inhalte[] = $ich->email;
+        $inhalte[] = utf8_decode($ich->vereinsname);
+        $inhalte[] = utf8_decode($this->daten->absender->nachname." ".$this->daten->absender->vorname);
+        $inhalte[] = utf8_decode($this->daten->absender->kontakt->strasse);
+        $inhalte[] = utf8_decode($this->daten->absender->kontakt->plz." ".$this->daten->absender->kontakt->ort);
+        $inhalte[] = utf8_decode($this->daten->kontakt->absender->telefonnummer);
+        $inhalte[] = utf8_decode($ich->email);
         
         $this->SetFont("Arial", "", 10);
         $x = 150;
@@ -40,34 +40,94 @@ class pdf_spendenquittung extends FPDF {
         
         $this->SetXY(10, 35);
         $this->MultiCell(140, 25, utf8_decode("Art der Zuwendung: Geldzuwendung"), 0);
+
+        // Datum
+        $this->SetFont("Arial", "", 11);
+        $this->SetXY(10, 42);
+        $this->MultiCell(140, 25, date_to_datum($this->daten->datum), 0);
     }
 
     private function mittelteil() {
-        $this->SetFont("Arial", "", 12);
+        // Definition der Konstante EUR für korrekte Darstellung des Eurozeichens
+		if(!defined(EUR)) {
+			define(EUR, chr(128));
+		}
+
+        $this->SetFont("Arial", "", 11);
         // Name des Spenders
         $this->SetXY(10, 70);
-        $this->Cell(63, 10, utf8_decode($this->daten->debitor->nachname.", ".$this->daten->debitor->vorname), 1);
+        $this->Cell(63, 10, "", 1); // Rahmen
+        // Für den Fall, dass die Ausgaben mehrzeilig sein muss, geschieht die Ausgabe nicht in der gleichen Zelle wie der Rahmen
+        $this->SetXY(10, 70);
+        $this->MultiCell(63, 5, utf8_decode($this->daten->debitor->nachname.", ".$this->daten->debitor->vorname), 0);
 
         // Strasse
         $this->SetXY(73, 70);
         $this->Cell(63, 10, "", 1);
+        $this->SetXY(73, 70);
+        $this->MultiCell(63, 5, utf8_decode($this->daten->debitor->kontakt->strasse), 0);
 
         // PLZ und Ort
         $this->SetXY(136, 70);
         $this->Cell(63, 10, "", 1);
+        $this->SetXY(136, 70);
+        $this->Cell(63, 5, utf8_decode($this->daten->debitor->kontakt->plz." ".$this->daten->debitor->kontakt->ort), 0);
 
         // Betrag als Zahl
         $this->SetXY(10, 80);
-        $this->Cell(63, 10, "", 1);
+        $this->Cell(63, 10, zahl_de($this->daten->summe)." ".EUR, 1);
 
         // Betrag in Worten
         $this->SetXY(73, 80);
         $this->Cell(63, 10, "", 1);
+        $this->SetXY(73, 80);
+        $this->MultiCell(63, 5, utf8_decode(betrag2text($this->daten->summe)), 0);
 
         // Zeitraum der Spenden
         $this->SetXY(136, 80);
         $this->Cell(63, 10, "", 1);
+        $this->SetXY(136, 80);
+        $datum_von_bis = date_to_datum($this->daten->datum_erste_spende);
+        if($this->daten->datum_letzte_spende != $this->daten->datum_erste_spende) {
+            $datum_von_bis .= " - ".date_to_datum($this->daten->datum_letzte_spende);
+        }
+        $this->MultiCell(63, 5, $datum_von_bis, 0);
+    
+        // Kein Verzicht auf Erstattung von Aufwendungen
+        $this->SetXY(10, 93);
+        $this->MultiCell(189, 5, "Es handelt sich dabei nicht um den Verzicht auf Erstattung von Aufwendungen.", 0);
 
+        // Freistellung vom... 
+        $this->SetXY(10, 103);
+        $this->MultiCell(189, 5, utf8_decode($this->daten->freistellung_vom), 0);
+
+        // Verwendungszweck
+        $this->SetXY(10, 123);
+        $this->MultiCell(189, 5, utf8_decode("Es wird bestätigt, dass die Zuwendung nur zur Förderung des Zweckes Völkerverständigung / humanitäre Hilfe im Sinne der Anl. 1 zu § 48 Abs. 2 Einkommensteuer-Durchführungsverordnung verwendet wird."), 0);
+
+        // Datum und Unterschrift
+        $this->SetXY(10, 150);
+        $this->MultiCell(189, 5, utf8_decode($this->daten->absender->kontakt->ort).", den ".date_to_datum($this->daten->datum), 0);
+        $this->SetXY(100, 150);
+        $this->Cell(100, 5, ".........................................................................................", 0);
+        $this->SetXY(100, 155);
+        $this->Cell(100, 5, "Unterschrift", 0);
+
+        // Nur bei mehreren Spenden:
+        if(count($this->daten->teilbuchungen) > 1) {
+            $this->SetXY(10, 160);
+            $this->SetFont("Arial", "B", 11);
+            $this->Cell(100, 5, "Einzelspenden:", 0);
+            $this->SetFont("Arial", "", 11);
+            $y = 165;
+            foreach($this->daten->teilbuchungen as $spende) {
+                $this->SetXY(10, $y);
+                $this->Cell(30, 5, date_to_datum($spende->datum), 1);
+                $this->SetXY(40, $y);
+                $this->Cell(100, 5, utf8_decode($spende->kommentar_hauptbuchung), 1);
+                $y += 5;
+            }
+        }
     }
 
     public function footer() {
