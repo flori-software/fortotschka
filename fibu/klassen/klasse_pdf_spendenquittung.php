@@ -124,14 +124,22 @@ class pdf_spendenquittung extends FPDF {
                 $this->SetXY(10, $y);
                 $this->Cell(30, 5, date_to_datum($spende->datum), 1);
                 $this->SetXY(40, $y);
-                $this->Cell(100, 5, utf8_decode($spende->kommentar_hauptbuchung), 1);
+                $this->Cell(30, 5, zahl_de($spende->summe)." ".EUR, 1, 0, "R");
+                $this->SetXY(70, $y);
+                $this->Cell(130, 5, utf8_decode($spende->kommentar_hauptbuchung), 1);
                 $y += 5;
             }
         }
     }
 
     public function footer() {
-
+        $this->SetFont("Arial", "", 9);
+        $this->SetXY(10, 260);
+        $text  = "Hinweis: Wer vorsätzlich oder grob fahrlässig eine unrichtige Zuwendungsbestätigung erstellt oder wer veranlasst, dass Zuwendungen nicht zu den in der Zuwendungsbestätigung angegebenen steuerbegünstigten Zwecken verwendet werden, ";
+        $text .= "haftet für die Steuer, die dem Fiskus durch einen etwaigen Abzug der Zuwendungen beim Zuwendenden entgeht (§10b Abs. 4 EStG, §9 Abs. 3 KStG, §9 Nr. 5 GewStG).\n";
+        $text .= "Diese Bestätigung wird nicht als Nachweis für die steuerliche Berücksichtigung der Zuwendung anerkannt, wenn das Datum des Freistellungsbescheides länger als 5 Jahre bzw. das Datum der vorläufigen Bescheinigung länger als 3 Jahre ";
+        $text .= "seit Ausstellung der Bestätigung zurückliegt (BMF vom 15.12.1994 - BStBI I S. 884).";
+        $this->MultiCell(190, 4, utf8_decode($text), 0);
     }
 }
 
