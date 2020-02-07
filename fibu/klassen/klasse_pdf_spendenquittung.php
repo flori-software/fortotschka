@@ -16,12 +16,12 @@ class pdf_spendenquittung extends FPDF {
         // Vereinsanschrift
         $ich = new ich;
         $inhalte   = Array();
-        $inhalte[] = utf8_decode($ich->vereinsname);
-        $inhalte[] = utf8_decode($this->daten->absender->nachname." ".$this->daten->absender->vorname);
-        $inhalte[] = utf8_decode($this->daten->absender->kontakt->strasse);
-        $inhalte[] = utf8_decode($this->daten->absender->kontakt->plz." ".$this->daten->absender->kontakt->ort);
-        $inhalte[] = utf8_decode($this->daten->kontakt->absender->telefonnummer);
-        $inhalte[] = utf8_decode($ich->email);
+        $inhalte[] = $ich->vereinsname;
+        $inhalte[] = $this->daten->absender->nachname." ".$this->daten->absender->vorname;
+        $inhalte[] = $this->daten->absender->kontakt->strasse;
+        $inhalte[] = $this->daten->absender->kontakt->plz." ".$this->daten->absender->kontakt->ort;
+        $inhalte[] = $this->daten->kontakt->absender->telefonnummer;
+        $inhalte[] = $ich->email;
         
         $this->SetFont("Arial", "", 10);
         $x = 150;
@@ -99,7 +99,7 @@ class pdf_spendenquittung extends FPDF {
 
         // Freistellung vom... 
         $this->SetXY(10, 103);
-        $this->MultiCell(189, 5, utf8_decode($this->daten->freistellung_vom), 0);
+        $this->MultiCell(189, 5, $this->daten->freistellung_vom, 0);
 
         // Verwendungszweck
         $this->SetXY(10, 123);

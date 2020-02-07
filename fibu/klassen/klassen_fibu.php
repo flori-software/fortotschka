@@ -522,7 +522,7 @@ class spendenquittung {
     public static function uebersicht_alle_spendenquittungen() {
         $spendenquittungen = Array();
         $mysqli = MyDatabase();
-        $abfrage = "SELECT * FROM `Spendenquittungen` ORDER BY `ID` DESC";
+        $abfrage = "SELECT * FROM `spendenquittungen` ORDER BY `ID` DESC";
         if($result = $mysqli->query($abfrage)) {
             while($row = $result->fetch_object()) {
                 $spendenquittung                     = new spendenquittung;
@@ -531,7 +531,6 @@ class spendenquittung {
                 $spendenquittung->summe              = $row->summe;
                 $spendenquittung->datum              = $row->datum;
                 $spendenquittung->nr_spendenquittung = $row->nr_spendenquittung;
-                
                 $spendenquittungen[] = $spendenquittung;
             }
         }    
