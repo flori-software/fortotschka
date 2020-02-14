@@ -61,7 +61,7 @@ if(isset($_SESSION["jahr"])) {
         $konten = konto::lesen_ueberischt_kontenart($art);
         echo '<table>';
         $gesamtwert_seite_anfang  = 0;
-        $gesamtwert_seite_aktuell = 0;
+        #$gesamtwert_seite_aktuell = 0;
         foreach ($konten as $konto) {
             echo '<tr><td>'.$konto->nr.'</td><td>'.$konto->bezeichnung.'</td><td>'.zahl_de($konto->saldo_anfang).'</td></tr>';
             $gesamtwert_seite_anfang += $konto->saldo_anfang;
@@ -83,14 +83,14 @@ if(isset($_SESSION["jahr"])) {
         echo '<td><div style="background-color: burlywood; border-radius: 20px; padding: 10px;">'.$art.'<br>';
         $konten = konto::lesen_ueberischt_kontenart($art);
         echo '<table>';
-        $gesamtwert_seite_anfang  = 0;
+        #$gesamtwert_seite_anfang  = 0;
         $gesamtwert_seite_aktuell = 0;
         foreach ($konten as $konto) {
             echo '<tr><td>'.$konto->nr.'</td><td>'.$konto->bezeichnung.'</td><td>'.zahl_de($konto->saldo_aktuell).'</td></tr>';
-            $gesamtwert_seite_anfang += $konto->saldo_aktuell;
+            $gesamtwert_seite_aktuell += $konto->saldo_aktuell;
         }
         echo '<tr><td colspan="6"><hr></td></tr>
-        <tr><td colspan="2"><td>'.zahl_de($gesamtwert_seite_anfang).'</td></tr>
+        <tr><td colspan="2"><td>'.zahl_de($gesamtwert_seite_aktuell).'</td></tr>
         </table>
         </div></td>';
     }

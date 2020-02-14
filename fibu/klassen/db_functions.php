@@ -57,7 +57,7 @@ function gesuchtes_feld($angabe,$tabelle,$gegebene_spalte,$gesuchte_spalte) {
 		}	
 	if (!isset($gesuchter_wert)) {$gesuchter_wert=0;}
 	return $gesuchter_wert;
-	}
+}
 
 // 3 E. EIN ELEMENT AUS BELIEBIGER TABELLE NACH BELIEBIGEM FELD ERMITTELN
 

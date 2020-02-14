@@ -596,6 +596,125 @@ class ich {
     }
 }
 
+class abschluss {
+    public $aktiva;  //Array Konten
+    public $passiva; //Array
+    public $ertrag;  //Array
+    public $aufwand; //Array
 
+    public $summe_ertrag;
+    public $summe_aufwand;
+    public $kapital;
+    public $eigenkapital;
+    public $fremdkapital;
+    public $ergebnis;
+
+    public $echtlauf;
+
+    public function __construct($echt) {
+        $this->aktiva  = Array();
+        $this->passiva = Array();
+        $this->ertrag  = Array();
+        $this->aufwand = Array();
+
+        $this->echtlauf= $echt;    
+
+        $this->bilanz_und_guv();
+    }
+
+    private function bilanz_und_guv() {
+        // GuV
+        echo '<span style="font-family: Arial Black; font-size: 16px;">Gewinn- und Verlustrechnung</span><p>';
+        $kontenarten    = Array("Ertrag", "Aufwand");
+        echo '<table rules="all">
+        <tr><td>Konto-nr.</td><td>Bezeichnung</td><td>Ertrag</td><td>Aufwand</td></tr>';
+        foreach ($kontenarten as $art) {
+            $konten = konto::lesen_ueberischt_kontenart($art);
+            foreach ($konten as $konto) {
+                if($art == "Ertrag") {
+                    echo "<tr><td>".$konto->nr.'</td><td>'.$konto->bezeichnung.'</td><td align="right">'.zahl_de($konto->saldo_aktuell).'</td><td></td></tr>';
+                    $this->ertrag[] = $konto;
+                    $this->summe_ertrag += $konto->saldo_aktuell;
+                } else {
+                    echo "<tr><td>".$konto->nr.'</td><td>'.$konto->bezeichnung.'</td><td></td><td align="right" ';
+                    if($konto->saldo_aktuell > 0) {echo 'style="color: red;"';}
+                    echo '>'.zahl_de($konto->saldo_aktuell).'</td></tr>';
+                    $this->aufwand[] = $konto;
+                    $this->summe_aufwand += $konto->saldo_aktuell;
+                }
+            }
+        }
+        $this->ergebnis = $this->summe_ertrag - $this->summe_aufwand;
+        echo '<tr><td colspan="2"></td><td>'.zahl_de($this->summe_ertrag).'</td><td style="color: red;">'.zahl_de($this->summe_aufwand).'</td></tr>';
+        echo '<tr style="font-size: 20px;"><td colspan="4" ';
+        if($this->ergebnis < 0) echo 'style="color: red;"';
+        echo '>Jahresergebnis: '.zahl_de($this->ergebnis).'</td></tr></table><p>';
+
+        // Bilanz
+        echo '<span style="font-family: Arial Black; font-size: 16px;">Bilanz</span><p>';
+        $kontenarten = Array("Aktiva", "Passiva");
+        echo '<table rules="all">
+        <tr><td>Konto-nr.</td><td>Bezeichnung</td><td>Aktiva</td><td>Passiva</td><td>Saldo Anfang</td><td>Ver&auml;nderung</td><td>Saldo aktuell</td></tr>
+        <tr><td colspan="7" align="center">AKTIVA</td></tr>';
+        $pruefsumme_guv = 0;
+        foreach ($kontenarten as $key=>$art) {
+            if($key == 1) {
+                // Wenn key = 1 ist das Array der Aktivakonten komplett durchiteriert
+                echo '<tr><td colspan="6"><td align="right" ';
+                if($this->kapital < 0) {echo 'style="color: red;"';}
+                echo '>'.zahl_de($this->kapital).'</td></tr>
+                <tr><td colspan="7" align="center">PASSIVA</td></tr>';}
+            $konten = konto::lesen_ueberischt_kontenart($art);
+            foreach ($konten as $konto) {
+                if($art == "Aktiva") {
+                    $bewegung        = $konto->saldo_aktuell - $konto->saldo_anfang;
+                    $pruefsumme_guv += $bewegung;
+                    echo '<tr align="right"><td>'.$konto->nr.'</td><td>'.$konto->bezeichnung.'</td><td align="center">X</td><td></td><td>'.zahl_de($konto->saldo_anfang).'</td><td ';
+                    if($bewegung < 0) {echo 'style="color: red;"';}
+                    echo '>'.zahl_de($bewegung).'</td><td>'.zahl_de($konto->saldo_aktuell).'</td></tr>';
+                    $this->aktiva[] = $konto;
+                    $this->kapital += $konto->saldo_aktuell;
+                } else {
+                    $bewegung = $konto->saldo_aktuell - $konto->saldo_anfang;
+                    echo '<tr align="right"><td>'.$konto->nr.'</td><td>'.$konto->bezeichnung.'</td><td></td><td align="center">X</td>  <td>'.zahl_de($konto->saldo_aktuell).'</td></tr>';
+                    $this->passiva[]     = $konto;
+                    $this->fremdkapital += $konto->saldo_aktuell;
+                }
+            }
+        }
+
+        // Eigenkapitalberechnung
+        $this->eigenkapital = $this->kapital - $this->fremdkapital;
+        if($this->eigenkapital < 0) {
+            $text  = "Durch Eigenkapital nicht gedeckter Fehlbetrag";
+            $color = "red";
+        } else {
+            $text  = "Eigenkapital";
+            $color = "green";
+        }
+        echo '<tr><td colspan="6">Fremdkapital</td><td align="right">'.zahl_de($this->fremdkapital).'</td></tr>';
+        echo '<tr style="font-size: 20px;"><td colspan="6">'.$text.'</td><td style="color: '.$color.';" align="right">'.zahl_de($this->eigenkapital).'</td></tr>';
+        echo '</table><p>';
+
+        $plausibiltaetspruefungszahl = $this->ergebnis - $pruefsumme_guv;
+        // Das Ergebnis der Plausibilitätsprüfung wird auf 2 - Nachkommastellen gekürzt
+        $plausibiltaetspruefungszahl = round($plausibiltaetspruefungszahl, 2);
+        if($plausibiltaetspruefungszahl == 0) {
+            echo 'Ergebnis der Plausibilit&auml;tspr&uuml;fung: OK<p>';
+            if($this->echtlauf == 1) {$this->speichern();}
+        } else {
+            echo '<span style="color: red;">Es gibt eine Abweichung zwischen den Bewegungen in den Konten und dem Jahresergebnis von '.zahl_de($plausibiltaetspruefungszahl).'</span>';
+        }
+    }
+
+    private function speichern() {
+        // Speichern des Abschlusses
+
+        // Speichern der Konten
+
+        // Blockieren der Umsätze
+        
+    }
+}
 
 ?>
