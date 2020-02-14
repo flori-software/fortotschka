@@ -287,6 +287,8 @@ class konto {
     public $summe_haben;
     public $umsaetze;      // Array
     public $aktiv;
+
+    public $bewegung; // Kalkulierter Wert für die Bilanz
     
     public function formular_lesen() {
         $this->nr           = $_POST["nr"];
@@ -667,16 +669,19 @@ class abschluss {
             $konten = konto::lesen_ueberischt_kontenart($art);
             foreach ($konten as $konto) {
                 if($art == "Aktiva") {
-                    $bewegung        = $konto->saldo_aktuell - $konto->saldo_anfang;
-                    $pruefsumme_guv += $bewegung;
+                    $konto->bewegung = $konto->saldo_aktuell - $konto->saldo_anfang;
+                    $pruefsumme_guv += $konto->bewegung;
                     echo '<tr align="right"><td>'.$konto->nr.'</td><td>'.$konto->bezeichnung.'</td><td align="center">X</td><td></td><td>'.zahl_de($konto->saldo_anfang).'</td><td ';
-                    if($bewegung < 0) {echo 'style="color: red;"';}
-                    echo '>'.zahl_de($bewegung).'</td><td>'.zahl_de($konto->saldo_aktuell).'</td></tr>';
+                    if($konto->bewegung < 0) {echo 'style="color: red;"';}
+                    echo '>'.zahl_de($konto->bewegung).'</td><td>'.zahl_de($konto->saldo_aktuell).'</td></tr>';
                     $this->aktiva[] = $konto;
                     $this->kapital += $konto->saldo_aktuell;
                 } else {
-                    $bewegung = $konto->saldo_aktuell - $konto->saldo_anfang;
-                    echo '<tr align="right"><td>'.$konto->nr.'</td><td>'.$konto->bezeichnung.'</td><td></td><td align="center">X</td>  <td>'.zahl_de($konto->saldo_aktuell).'</td></tr>';
+                    $konto->bewegung = $konto->saldo_aktuell - $konto->saldo_anfang;
+                    $pruefsumme_guv -= $konto->bewegung;
+                    echo '<tr align="right"><td>'.$konto->nr.'</td><td>'.$konto->bezeichnung.'</td><td></td><td align="center">X</td><td>'.zahl_de($konto->saldo_anfang).'</td><td ';
+                    if($konto->bewegung < 0) {echo 'style="color: blue;"';}
+                    echo '>'.zahl_de($konto->bewegung).'</td><td>'.zahl_de($konto->saldo_aktuell).'</td></tr>';
                     $this->passiva[]     = $konto;
                     $this->fremdkapital += $konto->saldo_aktuell;
                 }
@@ -709,11 +714,25 @@ class abschluss {
 
     private function speichern() {
         // Speichern des Abschlusses
-
+        $eintrag = "INSERT INTO `abschluesse` (`id_jahr`, `eigenkapital`, `ergebnis`, `fremdkapital`, `kapital`, `summe_ertrag`, `summe_aufwand`)
+        VALUES ('".$_SESSION["id_jahr"]."', '".$this->eigenkapital."', '".$this->ergebnis."', '".$this->fremdkapital."', '".$this->kapital."', , '".$this->summe_ertrag."', , '".$this->summe_aufwand."')";
+        $id_abschluss = standard_sql($eintrag, "Speichern des Jahresabschlusses");
+        
         // Speichern der Konten
+        $alle_konten = Array($aktiva, $passiva, $ertrag, $aufwand);
+        foreach($alle_konten as $key=>$kontenart) {
+            foreach ($kontenart as $konto) {
+                $eintrag = "INSERT INTO `abschluesse_konten` (`art`, `id_abschluss`, `nr_konto`, `bezeichnung`, `saldo_anfang`, `bewegung`, `saldo_ende`) VALUES
+                ('".$konto->art."', '".$id_abschluss."', '".$konto->nr."', '".$konto->bezeichnung."', '".$konto->saldo_anfang."', '".$konto->bewegung."', '".$konto->saldo_ende."')";
+                standard_sql($eintrag);
+            }
+        }
 
         // Blockieren der Umsätze
-        
+        $eintrag = "UPDATE `buchungen` Set `gesperrt`='1' WHERE `id_jahr`='".$_SESSION["id_jahr"]."'";
+        standard_sql($eintrag, "Sperren der Buchungen");
+        $eintrag = "UPDATE `teilbuchungen` Set `gesperrt`='1' WHERE `id_jahr`='".$_SESSION["id_jahr"]."'";
+        standard_sql($eintrag, "Sperren der Teilbuchungen");
     }
 }
 

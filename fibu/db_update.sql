@@ -29,3 +29,9 @@ ALTER TABLE `abschluesse_konten`
   
 ALTER TABLE `abschluesse_konten`
   MODIFY `ID` int(11) NOT NULL AUTO_INCREMENT;
+
+ALTER TABLE `abschluesse` ADD `fremdkapital` DOUBLE NOT NULL AFTER `ergebnis`, ADD `kapital` DOUBLE NOT NULL AFTER `fremdkapital`, ADD `summe_ertrag` DOUBLE NOT NULL AFTER `kapital`, ADD `summe_aufwand` DOUBLE NOT NULL AFTER `summe_ertrag`;
+
+ALTER TABLE `abschluesse_konten` ADD `art` VARCHAR(20) NOT NULL AFTER `ID`;
+
+ALTER TABLE `abschluesse_konten` CHANGE `id_konto` `nr_konto` VARCHAR(20) NOT NULL;
