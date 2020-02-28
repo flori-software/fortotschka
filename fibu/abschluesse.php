@@ -25,7 +25,7 @@ if(isset($_SESSION["jahr"])) {
         $button_zeigen = 1;
     }
     // Gibt es bereits einen Abschluss für das ausgewählte Geschäftsjahr?
-    $id_eintrag = gesuchter_wert($id_jahr, "abschluesse", "ID");
+    $id_eintrag = abschluss::lese_id_eintrag_jahresabschluss($_SESSION["jahr_id"]);
     if($id_eintrag > 0) {
         echo '<span id="my_small_title">F&uuml;r das aktuelle Gesch&auml;ftsjahr gibt es bereits einen Jahresabschluss<p></span>';
     } elseif($button_zeigen == 1) {

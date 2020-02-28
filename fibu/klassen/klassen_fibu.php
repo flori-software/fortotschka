@@ -686,6 +686,8 @@ class abschluss {
                     $this->fremdkapital += $konto->saldo_aktuell;
                 }
             }
+            // Falls keine Schulden bestehen, gibt es kein Fremdkapital. Es muss jedoch ein Wert für einen korrekten Eintrag in der DB gesetzt werden
+            if($this->fremdkapital == "") {$this->fremdkapital = 0;}
         }
 
         // Eigenkapitalberechnung
@@ -715,16 +717,21 @@ class abschluss {
     private function speichern() {
         // Speichern des Abschlusses
         $eintrag = "INSERT INTO `abschluesse` (`id_jahr`, `eigenkapital`, `ergebnis`, `fremdkapital`, `kapital`, `summe_ertrag`, `summe_aufwand`)
-        VALUES ('".$_SESSION["id_jahr"]."', '".$this->eigenkapital."', '".$this->ergebnis."', '".$this->fremdkapital."', '".$this->kapital."', , '".$this->summe_ertrag."', , '".$this->summe_aufwand."')";
+        VALUES ('".$_SESSION["jahr_id"]."', '".$this->eigenkapital."', '".$this->ergebnis."', '".$this->fremdkapital."', '".$this->kapital."', '".$this->summe_ertrag."', '".$this->summe_aufwand."')";
         $id_abschluss = standard_sql($eintrag, "Speichern des Jahresabschlusses");
         
         // Speichern der Konten
-        $alle_konten = Array($aktiva, $passiva, $ertrag, $aufwand);
+        $alle_konten = Array($this->aktiva, $this->passiva, $this->ertrag, $this->aufwand);
         foreach($alle_konten as $key=>$kontenart) {
             foreach ($kontenart as $konto) {
+                // Bei Erfolgskonten ist die Kontenbewegung identisch mit dem Saldo
+                if($key == 2 || $key == 3) {
+                    $konto->bewegung = $konto->saldo_aktuell;
+                }
+
                 $eintrag = "INSERT INTO `abschluesse_konten` (`art`, `id_abschluss`, `nr_konto`, `bezeichnung`, `saldo_anfang`, `bewegung`, `saldo_ende`) VALUES
-                ('".$konto->art."', '".$id_abschluss."', '".$konto->nr."', '".$konto->bezeichnung."', '".$konto->saldo_anfang."', '".$konto->bewegung."', '".$konto->saldo_ende."')";
-                standard_sql($eintrag);
+                ('".$konto->art."', '".$id_abschluss."', '".$konto->nr."', '".$konto->bezeichnung."', '".$konto->saldo_anfang."', '".$konto->bewegung."', '".$konto->saldo_aktuell."')";
+                standard_sql($eintrag, "Eintrag der Abschlusskonten");
             }
         }
 
@@ -734,6 +741,13 @@ class abschluss {
         $eintrag = "UPDATE `teilbuchungen` Set `gesperrt`='1' WHERE `id_jahr`='".$_SESSION["id_jahr"]."'";
         standard_sql($eintrag, "Sperren der Teilbuchungen");
     }
+
+    public static function lese_id_eintrag_jahresabschluss($id_jahr) {
+        $id_eintrag = gesuchtes_feld($id_jahr, "abschluesse", "id_jahr", "ID");
+        return $id_eintrag;
+    }
+
+    
 }
 
 ?>
