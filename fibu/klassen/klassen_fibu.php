@@ -7,17 +7,23 @@ class jahr {
     public $aktiv;
     public function __construct($id = 0) {
         if($id != 0) {   
-            $this->ID = $id; 
-            $mysqli = MyDatabase();
-            $abfrage = "SELECT * FROM `jahr` WHERE `ID`='".$this->ID."'";
-            if($result = $mysqli->query($abfrage)) {
-                while($row = $result->fetch_object()) {
-                    $this->jahr = $row->jahr;
-                    $_SESSION["jahr_id"] = $this->ID;
-                    $_SESSION["jahr"]    = $this->jahr;
-                }
+            $this->ID = $id;
+        } else {
+            $this->ID = $_SESSION["jahr_id"];
+        }
+        $mysqli = MyDatabase();
+        $abfrage = "SELECT * FROM `jahr` WHERE `ID`='".$this->ID."'";
+        if($result = $mysqli->query($abfrage)) {
+            while($row = $result->fetch_object()) {
+                $this->jahr      = $row->jahr;
+                $this->datum_von = $row->datum_von;
+                $this->datum_bis = $row->datum_bis;
+
+                $_SESSION["jahr_id"] = $this->ID;
+                $_SESSION["jahr"]    = $this->jahr;
             }
         }
+        
     }
     public function formular_lesen() {
         $this->jahr      = $_POST["jahr"];
@@ -25,19 +31,20 @@ class jahr {
         $this->datum_bis = $_POST["datum_bis"];
         $this->aktiv=1;
     }
-    public function speichern() {
-        
-        $this->formular_lesen();
+    public function speichern($formular_lesen = 1) {
+        if($formular_lesen == 1) {$this->formular_lesen();} // Wenn beim Jahresabschluss ein neues Geschäftsjahr angelegt wird, kein Formular lesen
         $eintrag = "INSERT INTO `jahr` (`jahr`, `datum_von`, `datum_bis`, `aktiv`)
         VALUES ('".$this->jahr."', '".$this->datum_von."', '".$this->datum_bis."', '".$this->aktiv."')";
-        standard_sql($eintrag, "Speichern eines Geschaeftsjahres");
-        
+        $id_jahr = standard_sql($eintrag, "Speichern eines Geschaeftsjahres");
+        return $id_jahr;
     }
+    /*
     public function aendern() {
         $this->jahr = $_POST["jahr"];
         $eintrag = "UPDATE `jahr` Set `jahr`='".$this->jahr."'";
         standard_sql($eintrag, "Wahl der Geschaeftsjahres");
     }
+    */
     public static function alle_jahre() {
         $mysqli  = myDatabase();
         $abfrage = "SELECT * FROM `jahr` ORDER BY `jahr` ASC";
@@ -303,8 +310,13 @@ class konto {
         $eintrag = "INSERT INTO `kontenplan` (`nr`, `bezeichnung`, `art`, `aktiv`)
         VALUES ('".$this->nr."', '".$this->bezeichnung."', '".$this->art."', '".$this->aktiv."')";
         $this->ID = standard_sql($eintrag, "Speichern des Kontos");
+        $this->anfangssaldo_eintragen();
+    }
+
+    public function anfangssaldo_eintragen($id_jahr = 0) {
+        if($id_jahr == 0) {$id_jahr = $_SESSION["jahr_id"];}
         $eintrag = "INSERT INTO `anfangssalden` (`id_konto`, `id_jahr`, `anfangssaldo`) VALUES 
-        ('".$this->ID."', '".$_SESSION["jahr_id"]."', '".$this->saldo_anfang."')";
+        ('".$this->ID."', '".$id_jahr."', '".$this->saldo_anfang."')";
         standard_sql($eintrag, "Eintragen eines neuen Kontos");
     }
     
@@ -715,6 +727,16 @@ class abschluss {
     }
 
     private function speichern() {
+        // Speichern eines neuen Geschäftsjahres
+        $folgejahr            = new jahr();
+        $folgejahr->aktiv     = 1;
+        $jahreszahl      = jahr_aus_datum($folgejahr->datum_von);
+        $jahreszahl++;
+        $folgejahr->jahr      = $jahreszahl;
+        $folgejahr->datum_von = datum_jahr_tauschen($folgejahr->datum_von, $jahreszahl);
+        $folgejahr->datum_bis = datum_jahr_tauschen($folgejahr->datum_bis, $jahreszahl);
+        $folgejahr->ID        = $folgejahr->speichern(0); // 0 steht für "Formular nicht lesen"
+
         // Speichern des Abschlusses
         $eintrag = "INSERT INTO `abschluesse` (`id_jahr`, `eigenkapital`, `ergebnis`, `fremdkapital`, `kapital`, `summe_ertrag`, `summe_aufwand`)
         VALUES ('".$_SESSION["jahr_id"]."', '".$this->eigenkapital."', '".$this->ergebnis."', '".$this->fremdkapital."', '".$this->kapital."', '".$this->summe_ertrag."', '".$this->summe_aufwand."')";
@@ -728,18 +750,30 @@ class abschluss {
                 if($key == 2 || $key == 3) {
                     $konto->bewegung = $konto->saldo_aktuell;
                 }
-
+                // Eintrag des Kontos in den Jahresabschluss
                 $eintrag = "INSERT INTO `abschluesse_konten` (`art`, `id_abschluss`, `nr_konto`, `bezeichnung`, `saldo_anfang`, `bewegung`, `saldo_ende`) VALUES
                 ('".$konto->art."', '".$id_abschluss."', '".$konto->nr."', '".$konto->bezeichnung."', '".$konto->saldo_anfang."', '".$konto->bewegung."', '".$konto->saldo_aktuell."')";
                 standard_sql($eintrag, "Eintrag der Abschlusskonten");
+
+                // Anlegen des Anfangsbestands im kommenden Geschäftsjahr für Bestandskonten
+                if($key == 0 || $key == 1) {
+                    $konto->saldo_anfang = $konto->saldo_aktuell;
+                } else {
+                    $konto->saldo_anfang = 0;
+                }
+                $konto->anfangssaldo_eintragen($folgejahr->ID);
             }
         }
 
         // Blockieren der Umsätze
-        $eintrag = "UPDATE `buchungen` Set `gesperrt`='1' WHERE `id_jahr`='".$_SESSION["id_jahr"]."'";
+        $eintrag = "UPDATE `buchungen` Set `gesperrt`='1' WHERE `id_jahr`='".$_SESSION["jahr_id"]."'";
+        echo $eintrag."<br>";
         standard_sql($eintrag, "Sperren der Buchungen");
-        $eintrag = "UPDATE `teilbuchungen` Set `gesperrt`='1' WHERE `id_jahr`='".$_SESSION["id_jahr"]."'";
+        $eintrag = "UPDATE `teilbuchungen` Set `gesperrt`='1' WHERE `id_jahr`='".$_SESSION["jahr_id"]."'";
+        echo $eintrag."<br>";
         standard_sql($eintrag, "Sperren der Teilbuchungen");
+
+        
     }
 
     public static function lese_id_eintrag_jahresabschluss($id_jahr) {
@@ -747,7 +781,7 @@ class abschluss {
         return $id_eintrag;
     }
 
-    
+
 }
 
 ?>
