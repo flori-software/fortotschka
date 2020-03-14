@@ -52,19 +52,19 @@ a.menu:hover, a.menu:active {
 input {
 	border: 0px;
 	margin-top: 0px;
-	margin-bottom: 10px;
+	margin-bottom: 5px;
 	padding: 5px;
-	height: 30px;
-	font-size: 20px;
+	height: 20px;
+	font-size: 12px;
 	font-weight: lighter;
 
-	-moz-border-radius: 12px;
-	-webkit-border-radius: 12px;
-	border-radius: 12px;
+	-moz-border-radius: 6px;
+	-webkit-border-radius: 6px;
+	border-radius: 6px;
 
-	-moz-box-shadow: 4px 4px 14px #000;
-	-webkit-box-shadow: 4px 4px 14px #000;
-	box-shadow: 4px 4px 14px #000;
+	-moz-box-shadow: 3px 3px 10px #000;
+	-webkit-box-shadow: 3px 3px 10px #000;
+	box-shadow: 3px 3px 10px #000;
 }
 
 input.checkbox {
@@ -86,19 +86,19 @@ input.checkbox {
 select {
 	border: 0px;
 	margin-top: 0px;
-	margin-bottom: 10px;
+	margin-bottom: 5px;
 	padding: 5px;
-	height: 30px;
-	font-size: 20px;
+	height: 20px;
+	font-size: 12px;
 	font-weight: lighter;
 
-	-moz-border-radius: 12px;
-	-webkit-border-radius: 12px;
-	border-radius: 12px;
+	-moz-border-radius: 6px;
+	-webkit-border-radius: 6px;
+	border-radius: 6px;
 
-	-moz-box-shadow: 4px 4px 14px #000;
-	-webkit-box-shadow: 4px 4px 14px #000;
-	box-shadow: 4px 4px 14px #000;
+	-moz-box-shadow: 3px 3px 10px #000;
+	-webkit-box-shadow: 3px 3px 10px #000;
+	box-shadow: 3px 3px 10px #000;
 }
 
 .nachricht {
