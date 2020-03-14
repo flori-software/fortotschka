@@ -68,7 +68,7 @@ if(isset($_SESSION["jahr"])) {
     } else {
         $display = "display: none;";
     }
-    echo '<div id="eingabe_buchung" style="background-color: gold; border-radius: 20px; padding: 15px; z-index: 2; position: absolute; top: 20%; '.$display.'">
+    echo '<div id="eingabe_buchung" style="background-color: gold; border-radius: 20px; padding: 15px; z-index: 2; position: absolute; top: 400px; '.$display.'">
     <img src="pics/wegblendkreuz.png" style="position: relative; top: 0px; left: 0px;" onclick="eingabeformular_ein_ausblenden(0)">
     <form action="buchungen.php?aktion='.$aktion_formular.'" method="POST">
     <table>

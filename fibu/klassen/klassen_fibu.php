@@ -767,10 +767,8 @@ class abschluss {
 
         // Blockieren der Umsätze
         $eintrag = "UPDATE `buchungen` Set `gesperrt`='1' WHERE `id_jahr`='".$_SESSION["jahr_id"]."'";
-        echo $eintrag."<br>";
         standard_sql($eintrag, "Sperren der Buchungen");
         $eintrag = "UPDATE `teilbuchungen` Set `gesperrt`='1' WHERE `id_jahr`='".$_SESSION["jahr_id"]."'";
-        echo $eintrag."<br>";
         standard_sql($eintrag, "Sperren der Teilbuchungen");
 
         
