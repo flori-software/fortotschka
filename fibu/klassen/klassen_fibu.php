@@ -371,6 +371,7 @@ class konto {
     public function aktuelles_saldo() {
         $mysqli = MyDatabase();
         $abfrage = "SELECT * FROM `teilbuchungen` WHERE (`id_konto_soll`=".$this->ID." OR `id_konto_haben`=".$this->ID.") AND `id_jahr`=".$_SESSION["jahr_id"];
+
         if($result = $mysqli->query($abfrage)) {
             while($row = $result->fetch_object()) {
                 $teilbuchung     = new teilbuchung;

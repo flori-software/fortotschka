@@ -8,7 +8,7 @@ include "klassen/klasse_personen.php";
 
 $benutzername = $_POST["benutzername"];
 $passwort     = $_POST["passwort"];
-
+    echo "Benutzername und Passwort sind ".$benutzername." ".$passwort."<br>";
 $benutzer = new Benutzer;
 $benutzer->login($benutzername, $passwort);
 
