@@ -99,7 +99,7 @@ class pdf_spendenquittung extends FPDF {
 
         // Freistellung vom... 
         $this->SetXY(10, 103);
-        $this->MultiCell(189, 5, $this->daten->freistellung_vom, 0);
+        $this->MultiCell(189, 5, utf8_decode($this->daten->freistellung_vom), 0);
 
         // Verwendungszweck
         $this->SetXY(10, 123);
