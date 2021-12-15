@@ -143,3 +143,6 @@ select {
 	font-size: 100%;
 } 
 
+#zeile_weiss:hover {
+    background-color: white;
+}

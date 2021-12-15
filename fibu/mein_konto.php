@@ -46,7 +46,6 @@ if($aktion === "benutzerdaten_zeigen") {
     $member->get_benutzerdaten();
 }
 
-print_r($member->monate);
 
 echo '<form action="mein_konto.php?aktion=bearbeiten&id='.$member->ID.'" method="POST">';
 
@@ -72,7 +71,6 @@ echo '
 <input name="iban" placeholder="IBAN" value="'.$member->iban.'"> &nbsp;
 <input name="bic" placeholder="BIC"  value="'.$member->bic.'">  <br> 
 <input name="mandatsreferenznummer" placeholder="Mandatsreferenz" value="'.$member->mandatsreferenznummer.'" > <br> 
-<input name="jahresbeitrag" placeholder="Jahresbeitrag" value="'.$member->jahresbeitrag.'"> &nbsp;
 <input name="monatsbeitrag" placeholder="Monatsbeitrag" value="'.$member->monatsbeitrag.'" > <br> 
 
 
@@ -172,9 +170,49 @@ foreach ($members as $member) {
         $gezeigte_mitglieder = 0;
     }
 }
-    
+echo '</table><p>';
+
+// Übersicht über die monatlichen Lastschriften
+echo '<p><a href="mein_konto.php?anzeige_mitglieder=alle">Alle Mitglieder zeigen</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="mein_konto.php">Nur Mitglieder mit Einzugsdaten</a></p>';
+$anzeige_mitglieder = $_GET["anzeige_mitglieder"] ?? "";
+
+echo '<table rules="all">
+<tr><td style="width: ">Mitglied</td><td>IBAN</td><td style="width: 100px;">Januar</td><td style="width: 100px;">Februar</td>
+<td style="width: 100px;">M&auml;rz</td><td style="width: 100px;">April</td><td style="width: 100px;">Mai</td>
+<td style="width: 100px;">Juni</td><td style="width: 100px;">Juli</td><td style="width: 100px;">August</td>
+<td style="width: 100px;">September</td><td style="width: 100px;">Oktober</td><td style="width: 100px;">November</td><td style="width: 100px;">Dezember</td></tr>';
+$summen_pro_monat = Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+
+// Anzeige der Beiträge des jeweiligen Mitglieds
+foreach($members as $member) {
+    if($member->einzugsdaten_vorhanden() == true || $anzeige_mitglieder == "alle") {
+        echo '<tr id="zeile_weiss"><td>'.$member->benutzername.'</td><td>'.$member->iban.'</td>';
+        $summe_mitglied = 0;
+        for($cnt = 1; $cnt <=12; $cnt++) {
+            echo '<td>';
+            if($member->monate[$cnt] == 1) {
+                echo zahl_de($member->monatsbeitrag);
+                $summen_pro_monat[$cnt] += $member->monatsbeitrag;
+                $summe_mitglied         += $member->monatsbeitrag;
+            }
+            echo '</td>';
+        }
+        echo '<td style="font-weight: bold;">'.$summe_mitglied.'</td></tr>';
+    } 
+}
+// Anzeige der Summen pro Monat
+$jahressumme = 0;
+echo '<tr><td></td><td></td>';
+for($cnt = 1; $cnt <=12; $cnt++) {
+    echo '<td style="font-weight: bold;">';
+    echo zahl_de($summen_pro_monat[$cnt]);
+    $jahressumme += $summen_pro_monat[$cnt];
+    echo '</td>';
+}
+echo '<td style="font-weight: bold; font-size: 14px;">'.zahl_de($jahressumme).'</td></tr>';
 
 echo '</table>';
+
 include "page_end.php";
 
 ?>

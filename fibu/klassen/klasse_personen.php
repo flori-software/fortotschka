@@ -66,7 +66,6 @@ class Benutzer {
         $this->monate[10]               = PostMyVAr("oktober", 0);
         $this->monate[11]               = PostMyVAr("november", 0);
         $this->monate[12]               = PostMyVAr("dezember", 0);
-        $this->jahresbeitrag            = PostMyVAr("jahresbeitrag", 0);
         $this->monatsbeitrag            = PostMyVAr("monatsbeitrag", 0);
         $this->mandatsreferenznummer    = $_POST["mandatsreferenznummer"];
         
@@ -114,8 +113,7 @@ class Benutzer {
         `monat9`       = '".$this->monate[9]."',
         `monat10`      = '".$this->monate[10]."',         
         `monat11`      = '".$this->monate[11]."',         
-        `monat12`      = '".$this->monate[12]."',           
-        `jahresbeitrag` = '".$this->jahresbeitrag."',         
+        `monat12`      = '".$this->monate[12]."',                    
         `monatsbeitrag` = '".$this->monatsbeitrag."',           
         `mandatsreferenznummer` = '".$this->mandatsreferenznummer."'";
 		if($this->passwort != "") {$eintrag .= ", `passwort` = '".$this->passwort."'";}
@@ -186,14 +184,14 @@ class Benutzer {
                 $this->monate[9]        = $row->monat9;
                 $this->monate[10]       = $row->monat10;         
                 $this->monate[11]       = $row->monat11;         
-                $this->monate[12]       = $row->monat12;           
-                $this->jahresbeitrag    = $row->jahresbeitrag;         
+                $this->monate[12]       = $row->monat12;                    
                 $this->monatsbeitrag    = $row->monatsbeitrag;           
                 $this->mandatsreferenznummer = $row->mandatsreferenznummer;
 			}
 		}
 	}
 
+	/*
 	public function filme_speichern($filme) {
 		$this->ids_gekaufte_artikel = Array();
 		echo "Filme hat ".count($filme)." Elemente<br>";
@@ -211,6 +209,27 @@ class Benutzer {
 			echo 'Fehler beim Speichern der gekauften Artikel<br>';
 		}
 	}
+	*/
+
+	public function einzugsdaten_vorhanden() {
+		$antwort = false;
+		if($this->iban != "") {$antwort = true;}           
+		if($this->monate[1] != 0) {$antwort = true;}             
+		if($this->monate[2] != 0) {$antwort = true;}             
+		if($this->monate[3] != 0) {$antwort = true;}              
+		if($this->monate[4] != 0) {$antwort = true;}        
+		if($this->monate[5] != 0) {$antwort = true;}             
+		if($this->monate[6] != 0) {$antwort = true;}        
+		if($this->monate[7] != 0) {$antwort = true;}         
+		if($this->monate[8] != 0) {$antwort = true;}       
+		if($this->monate[9] != 0) {$antwort = true;} 
+		if($this->monate[10]!= 0) {$antwort = true;}         
+		if($this->monate[11]!= 0) {$antwort = true;}        
+		if($this->monate[12]!= 0) {$antwort = true;}                    
+		if($this->monatsbeitrag != 0) {$antwort = true;}           
+		if($this->mandatsreferenznummer != "") {$antwort = true;}
+		return $antwort;
+	}
 
 	public static function namen_aller_benutzer() {
 		$alle_benutzer = Array();
@@ -220,15 +239,16 @@ class Benutzer {
 			while($row = $result->fetch_object()) {
 				$benutzer     			= new Benutzer;
 				$benutzer->ID 			= $row->ID;
-				$benutzer->benutzername = $row->benutzername;
+				$benutzer->get_benutzerdaten();
 				$alle_benutzer[] = $benutzer;
 			}
 		}
 		return $alle_benutzer;
 	}
     
-}
 
+}
+/*
 class Artikel {
 	public $ID;
 	public $bezeichnung;
@@ -291,4 +311,5 @@ class Artikel {
 		return $alle_Artikel;
 	}
 }
+*/
 ?>

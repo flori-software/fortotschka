@@ -1,0 +1,1 @@
+ALTER TABLE `Benutzer` DROP `jahresbeitrag`;
