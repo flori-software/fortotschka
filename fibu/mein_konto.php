@@ -46,6 +46,7 @@ if($aktion === "benutzerdaten_zeigen") {
     $member->get_benutzerdaten();
 }
 
+print_r($member->monate);
 
 echo '<form action="mein_konto.php?aktion=bearbeiten&id='.$member->ID.'" method="POST">';
 
