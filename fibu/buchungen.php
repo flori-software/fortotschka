@@ -98,6 +98,8 @@ if(isset($_SESSION["jahr"])) {
     echo '</table></form></div>';
 
     $buchungen = buchung::lesen_alle($jahr->datum_von, $jahr->datum_bis);
+    echo 'Buchungen:';
+    echo '<pre>', print_r($buchungen), '</pre>';
     $backgroundcolor = "antiquewhite";
     foreach ($buchungen as $key=>$buchung) {
         if($backgroundcolor == "antiquewhite") {

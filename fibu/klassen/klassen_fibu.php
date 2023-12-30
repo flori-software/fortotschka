@@ -33,6 +33,7 @@ class jahr {
     }
     public function speichern($formular_lesen = 1) {
         if($formular_lesen == 1) {$this->formular_lesen();} // Wenn beim Jahresabschluss ein neues Geschäftsjahr angelegt wird, kein Formular lesen
+        
         $eintrag = "INSERT INTO `jahr` (`jahr`, `datum_von`, `datum_bis`, `aktiv`)
         VALUES ('".$this->jahr."', '".$this->datum_von."', '".$this->datum_bis."', '".$this->aktiv."')";
         $id_jahr = standard_sql($eintrag, "Speichern eines Geschaeftsjahres");
@@ -735,6 +736,11 @@ class abschluss {
         $jahreszahl++;
         $folgejahr->jahr      = $jahreszahl;
         $folgejahr->datum_von = datum_jahr_tauschen($folgejahr->datum_von, $jahreszahl);
+        // Unregelmäßiges Geschäftsjahr
+        if(monat_aus_datum($folgejahr->datum_bis) < monat_aus_datum($folgejahr->datum_von)) {
+            // Das Geschäftsjahr im anderen Kalenderjahr als es anfängt
+            $jahreszahl++;
+        }
         $folgejahr->datum_bis = datum_jahr_tauschen($folgejahr->datum_bis, $jahreszahl);
         $folgejahr->ID        = $folgejahr->speichern(0); // 0 steht für "Formular nicht lesen"
 

@@ -6,7 +6,11 @@ include "formulare.php";
 include "date_and_time.php";
 
 function MyDatabase() {
-	$mysqli=new mysqli("localhost","d032ff91","ZurGroesserenEhreGottes","d032ff91");
+	// flori-software ReWe
+	$mysqli=new mysqli("localhost","d03c753b","DerHerrIstDeinGott333","d03c753b");
+	
+	// Fortotschka ReWe
+	// $mysqli=new mysqli("localhost","d032ff91","ZurGroesserenEhreGottes","d032ff91");
 	if (mysqli_connect_errno()) {
     	printf("Es konnte keine Verbindung zur Datenbank aufgebaut werden<p>", mysqli_connect_error());
     	exit();
