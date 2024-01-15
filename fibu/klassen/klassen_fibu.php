@@ -265,13 +265,17 @@ class buchung {
         standard_sql($eintrag, "Loeschen der Teilbuchungen");
     }
 
-    public static function lesen_alle($datum_von = "0001-01-01", $datum_bis = "2100-12-31", $id_konto_soll = 0, $id_konto_haben = 0) {
+    public static function lesen_alle($datum_von = "0001-01-01", $datum_bis = "2100-12-31", $id_konto_soll = 0, $id_konto_haben = 0, $nr_von = 0, $nr_bis = 0, $nicht_exportierte = 0) {
         $buchungen = Array();
         $mysqli  = MyDatabase();
         $abfrage = "SELECT `ID` FROM `buchungen` WHERE `datum` >= '".$datum_von."' AND `datum` <= '".$datum_bis."' ";
         if($id_konto_soll != 0) {$abfrage .= "AND `id_konto_soll`='.$id_konto_soll.'";}
         if($id_konto_haben != 0) {$abfrage .= "AND `id_konto_haben`='.$id_konto_haben.'";}
+        if($nr_von != 0) {$abfrage .= "AND `ID` >= '".$nr_von."'";}
+        if($nr_bis != 0) {$abfrage .= "AND `ID` <= '".$nr_bis."'";}
+        if($nicht_exportierte == 1) {$abfrage .= "AND `exportiert` = '0'";}
         $abfrage .= " ORDER BY `datum` DESC, `ID` DESC";
+        echo $abfrage.'<br>';
         if($result = $mysqli->query($abfrage)) {
             while($row = $result->fetch_object()) {
                 $buchung = new buchung;
@@ -281,6 +285,11 @@ class buchung {
             }
         }
         return $buchungen;
+    }
+
+    public static function datev_export($buchungen) {
+        echo 'Export:';
+        echo '<pre>', print_r($buchungen), '</pre>';
     }
 }
 
@@ -566,6 +575,14 @@ class ich {
     public $vorstand;
     public $freistellungsbescheid_vom;
 
+    // Eigenschaften für den DATEV-Export der Buchungen
+    public $datev_beginn_wirtschaftsjahr;
+    public $datev_kontenrahmen;
+    public $datev_beraternummer;
+    public $datev_mandantennummer;
+    public $datev_konto_forderungen;
+    public $datev_gegenkonto_aufwand;
+
     public function __construct() {
         $mysqli = MyDatabase();
         $abfrage = "SELECT * FROM `ich`";
@@ -609,6 +626,33 @@ class ich {
         `vorstand`                  = '".$this->vorstand."',         
         `freistellungsbescheid_vom` = '".$this->freistellungsbescheid_vom."'";
         standard_sql($eintrag, "Bearbeiten der Vereinsdaten");
+    }
+
+    public function get_datev_einstellungen() {
+        $mysqli = MyDatabase();
+        $abfrage = "SELECT * FROM `ich`";
+        if($result = $mysqli->query($abfrage)) {
+            while($row = $result->fetch_object()) {
+                $this->datev_beginn_wirtschaftsjahr= $row->datev_beginn_wirtschaftsjahr;
+                $this->datev_kontenrahmen          = $row->datev_kontenrahmen;
+                $this->datev_beraternummer         = $row->datev_beraternummer;
+                $this->datev_mandantennummer       = $row->datev_mandantennummer;
+                $this->datev_konto_forderungen     = $row->datev_konto_forderungen;
+                $this->datev_gegenkonto_aufwand    = $row->datev_gegenkonto_aufwand;
+            }
+        }
+    }
+
+    public function datev_einstellungen_speichern() {
+        $eintrag = "UPDATE `ich` Set
+        `datev_beginn_wirtschaftsjahr`= '".$this->datev_beginn_wirtschaftsjahr."',
+        `datev_kontenrahmen`          = '".$this->datev_kontenrahmen."',
+        `datev_beraternummer`         = '".$this->datev_beraternummer."',           
+        `datev_mandantennummer`       = '".$this->datev_mandantennummer."',       
+        `datev_konto_forderungen`     = '".$this->datev_konto_forderungen."',       
+        `datev_gegenkonto_aufwand`    = '".$this->datev_gegenkonto_aufwand."'";
+
+        standard_sql($eintrag, "Bearbeiten der DATEV-Einstellungen");
     }
 }
 

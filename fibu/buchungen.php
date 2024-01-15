@@ -4,11 +4,13 @@ include "page_start.php";
 include "klassen/FUNCTIONS.php";
 include "klassen/klassen_fibu.php";
 include "klassen/klasse_personen.php";
-echo '<script src="klassen/tools.js"></script>';
+echo '<script src="klassen/tools_v2.js"></script>';
 
 // Funktionalität
 $aktion          = GetMyVar("aktion", "");
 $aktion_formular = "buchung_speichern";
+$ich             = new ich;
+
 
 switch ($aktion) {
     case 'buchung_speichern':
@@ -45,6 +47,31 @@ switch ($aktion) {
     case 'jahr_aktivieren':
         $jahr = new jahr($_GET["id"]);
     break;
+
+    case 'exporteinstellungen_speichern':
+        echo 'Speichere DATEV Einstellungen<br>';
+        $ich->datev_beginn_wirtschaftsjahr = $_POST["beginn_wirtschaftsjahr"] ?? "2023-11-01";
+        $ich->datev_kontenrahmen           = $_POST["kontenrahmen"] ?? "SKR03";
+        $ich->datev_beraternummer          = $_POST["beraternummer"] ?? 1;
+        $ich->datev_mandantennummer        = $_POST["mandantennummer"] ?? 1;
+        $ich->datev_konto_forderungen      = $_POST["konto_forderungen"] ?? 0;
+        $ich->datev_gegenkonto_aufwand     = $_POST["gegenkonto_aufwand"] ?? 0;
+        $ich->datev_einstellungen_speichern();
+    break;
+
+    case 'exportieren':
+        
+        echo 'Exportiere Buchungen<br>';
+        $buchungen = Array();
+        if($_POST["export"] == "nicht_exportiert") {
+            $buchungen = buchung::lesen_alle(nicht_exportierte: 1);
+            echo 'Buchungen';
+            echo '<pre>', print_r($buchungen), '</pre>';
+        } else {
+            $buchungen = buchung::lesen_alle(nr_von: $_POST["buchungsnummer_von"], nr_bis: $_POST["buchungsnummer_bis"]);
+        }
+        buchung::datev_export($buchungen);
+        
 }
 
 echo 'Gesch&auml;ftsjahre:';
@@ -56,6 +83,48 @@ $alle_benutzer = Benutzer::namen_aller_benutzer();
 foreach($jahre as $jahr) {
     echo '<a href="buchungen.php?aktion=jahr_aktivieren&id='.$jahr->ID.'">'.$jahr->jahr.'</a>&nbsp;';
 }
+// An dieser Stelle folgt eine Checkbox mit dem Label "Export" - wenn sie angeklickt wird, wird das darauffolgende DIV-Element eingeblendet (welches standardsmäßig ausgeblendet ist) und in dem wir dann Einstellungen für den Export der Daten vornehmen können
+
+$ich->get_datev_einstellungen();
+
+echo '<br><input type="checkbox" id="export" onclick="bereich_durch_checkbox_ein_ausblenden(\'export\', \'export_einstellungen\')">Export';
+echo '<div id="export_einstellungen" style="display: none; background-color: lightgray; border-radius: 10px; padding: 10px;">
+<form action="buchungen.php?aktion=exporteinstellungen_speichern" method="POST">
+<table>
+<tr><td>Beginn Wirtschaftsjahr</td><td>Kontenrahmen</td><td>Beraternummer</td><td>Mandantennummer</td><td>Konto Forderungen</td></tr>
+<tr>
+<td><input type="date" name="beginn_wirtschaftsjahr" value="'.$ich->datev_beginn_wirtschaftsjahr.'"></td>
+<td><select name="kontenrahmen">';
+$namen_kontenrahmen = Array("SKR 03", "SKR 04", "SKR 45 soziale Einrichtungen nach PBV", "SKR 49");
+$kontenrahmen = Array("SKR03", "SKR04", "SKR45", "SKR49");
+multidropdown($namen_kontenrahmen, $kontenrahmen, $ich->datev_kontenrahmen);
+echo '</select></td>
+<td><input type="number" name="beraternummer" value="'.$ich->datev_beraternummer.'"></td>
+<td><input type="number" name="mandantennummer" value="'.$ich->datev_mandantennummer.'"></td>
+<td><input type="number" name="konto_forderungen" value="'.$ich->datev_konto_forderungen.'"></td>
+</tr>
+<tr>
+<td colspan="4"></td>
+<td>Gegenkonto Aufwand</td>
+</tr>
+<tr>
+<td colspan="4"></td>
+<td><input type="number" name="gegenkonto_aufwand" value="'.$ich->datev_gegenkonto_aufwand.'"></td>
+</tr>
+</table>
+<input type="submit" value="Einstellungen speichern">
+</form>
+<hr>
+<form action="buchungen.php?aktion=exportieren" method="POST">';
+// Zwei Radiobuttons mit den LAbeln 'Alel nicht exportierten Buchungen' und 'Buchungen zwischen den folgenden Nr.:', anschließend zwei inputfelder für die Buchungsnummern
+echo '<input type="radio" name="export" value="nicht_exportiert" checked>Alle nicht exportierten Buchungen<br>
+<input type="radio" name="export" value="buchungsnummern">Buchungen zwischen den folgenden Nr.:<br>
+<input type="number" name="buchungsnummer_von" value="0"><br>
+<input type="number" name="buchungsnummer_bis" value="0"><br>';
+echo '<input type="submit" value="Exportieren">
+</div>';
+
+echo 'Test 4<br>';
 if(isset($_SESSION["jahr"])) {
     echo ' - aktives Gesch&auml;ftsjahr ist '.$_SESSION["jahr"].'<br>'; 
     echo 'Buchungen&nbsp;
@@ -98,8 +167,7 @@ if(isset($_SESSION["jahr"])) {
     echo '</table></form></div>';
 
     $buchungen = buchung::lesen_alle($jahr->datum_von, $jahr->datum_bis);
-    echo 'Buchungen:';
-    echo '<pre>', print_r($buchungen), '</pre>';
+
     $backgroundcolor = "antiquewhite";
     foreach ($buchungen as $key=>$buchung) {
         if($backgroundcolor == "antiquewhite") {

@@ -553,7 +553,7 @@ function linie_dropdown($hidden_field, $border_to_apply, $px = 0, $nr = 1) {
 }
 
 function datum_dropdown ($datum, $id_feld) {
-	// Funktion benutzt die JS-Funktion f_datum_dropdown aus tools.js
+	// Funktion benutzt die JS-Funktion f_datum_dropdown aus tools_v2.js
 	// Diese wiederum benutzt Datumsfunktionen aus tools_kalender.js
 	$array_datum = array_aus_datum($datum);
 	$monate      = array_monate();

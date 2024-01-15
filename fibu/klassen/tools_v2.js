@@ -45,3 +45,13 @@ function f_person_not_double_AJAX() {
 		}
 	}
 }
+
+function bereich_durch_checkbox_ein_ausblenden(id_checkbox, id_bereich) {
+    var status = document.getElementById(id_checkbox).checked;
+    console.log(status);
+    if(status) {
+        $("#" + id_bereich).fadeIn("slow");
+    } else {
+        $("#" + id_bereich).fadeOut("slow");
+    }
+}

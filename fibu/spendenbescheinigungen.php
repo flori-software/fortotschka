@@ -3,7 +3,7 @@ include "page_start.php";
 include "klassen/FUNCTIONS.php";
 include "klassen/klassen_fibu.php";
 include "klassen/klasse_personen.php";
-echo '<script src="klassen/tools.js"></script>
+echo '<script src="klassen/tools_v2.js"></script>
 <style>
 
 .alle_spendenquittungen {
