@@ -297,13 +297,14 @@ class buchung {
         foreach($buchungen as $buchung) {
             $buchung->lesen();
             foreach ($buchung->teilbuchungen as $teilbuchung) {
-                $gesamtpreis = 0;
-                $konto = 1;
-                $gegenkonto = 2;
+                $gesamtpreis = $teilbuchung->summe;
+                $skonto = gesuchter_wert(id: $teilbuchung->id_konto_soll, tabelle: "kontenplan", gesuchte_spalte: "nr");
+                $hkonto = gesuchter_wert(id: $teilbuchung->id_konto_haben, tabelle: "kontenplan", gesuchte_spalte: "nr");
                 $soll_haben = "S";
-                $buchungsdatum = "2023-02-01";
-                $buchungsnummer = 7;
-                $datev_booking = new DatevFormatBooking($gesamtpreis, $gegenkonto, $konto, $soll_haben, new DateTime($buchungsdatum), $buchungsnummer , 1, "Testbuchung");
+                $buchungsdatum = $buchung->datum;
+                $buchungsnummer = $buchung->ID;
+                $text = $buchung->kommentar.' '.$teilbuchung->kommentar;
+                $datev_booking = new DatevFormatBooking($gesamtpreis, $hkonto, $skonto, $soll_haben, new DateTime($buchungsdatum), $buchungsnummer , 1, $text);
 
                 $datev_format->add_row($datev_booking);
             }
@@ -379,6 +380,8 @@ class konto {
             }
         }
     }
+
+
 
     public function lesen_kontenart() {
         $this->art = gesuchter_wert($this->ID, "kontenplan", "art");

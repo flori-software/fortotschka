@@ -162,8 +162,8 @@ class DatevFormatBooking extends DatevFormatRow {
 
         $this->set_cell(1, DatevFormatType::PLAIN, number_format($this->sales, 2, ',', ''));
         $this->set_cell(2, DatevFormatType::ESCAPED, $this->sh);
-        $this->set_cell(3, DatevFormatType::ESCAPED, '');
-        $this->set_cell(4, DatevFormatType::PLAIN, '');
+        $this->set_cell(3, DatevFormatType::ESCAPED, 'EUR');
+        $this->set_cell(4, DatevFormatType::PLAIN, '1');
         $this->set_cell(5, DatevFormatType::PLAIN, '');
         $this->set_cell(6, DatevFormatType::ESCAPED, '');
         $this->set_cell(7, DatevFormatType::PLAIN, strval($this->account));

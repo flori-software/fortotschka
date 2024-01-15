@@ -115,7 +115,7 @@ echo '<input type="radio" name="export" value="nicht_exportiert" checked>Alle ni
 echo '<input type="submit" value="Exportieren">
 </div>';
 
-echo 'Test 4<br>';
+
 if(isset($_SESSION["jahr"])) {
     echo ' - aktives Gesch&auml;ftsjahr ist '.$_SESSION["jahr"].'<br>'; 
     echo 'Buchungen&nbsp;
