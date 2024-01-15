@@ -275,7 +275,6 @@ class buchung {
         if($nr_bis != 0) {$abfrage .= "AND `ID` <= '".$nr_bis."'";}
         if($nicht_exportierte == 1) {$abfrage .= "AND `exportiert` = '0'";}
         $abfrage .= " ORDER BY `datum` DESC, `ID` DESC";
-        echo $abfrage.'<br>';
         if($result = $mysqli->query($abfrage)) {
             while($row = $result->fetch_object()) {
                 $buchung = new buchung;
@@ -288,8 +287,31 @@ class buchung {
     }
 
     public static function datev_export($buchungen) {
-        echo 'Export:';
-        echo '<pre>', print_r($buchungen), '</pre>';
+        $start = new DateTime();
+        $end = new DateTime();
+
+        $ich = new ich;
+        $ich->get_datev_einstellungen();
+        $datev_settings = new Datev_Settings(new DateTime($ich->datev_beginn_wirtschaftsjahr), $ich->datev_beraternummer, $ich->datev_mandantennummer, $ich->datev_kontenrahmen);
+        $datev_format = new DatevFormat($start, $end, $datev_settings);
+        foreach($buchungen as $buchung) {
+            $buchung->lesen();
+            foreach ($buchung->teilbuchungen as $teilbuchung) {
+                $gesamtpreis = 0;
+                $konto = 1;
+                $gegenkonto = 2;
+                $soll_haben = "S";
+                $buchungsdatum = "2023-02-01";
+                $buchungsnummer = 7;
+                $datev_booking = new DatevFormatBooking($gesamtpreis, $gegenkonto, $konto, $soll_haben, new DateTime($buchungsdatum), $buchungsnummer , 1, "Testbuchung");
+
+                $datev_format->add_row($datev_booking);
+            }
+            // An dieser Stelle die Buchung als exportiert markieren
+
+
+        }
+        $datev_format->get_zip("EXTF_gabriel_".date('d_m_Y_H_i').".csv");
     }
 }
 

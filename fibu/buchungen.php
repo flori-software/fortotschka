@@ -4,6 +4,7 @@ include "page_start.php";
 include "klassen/FUNCTIONS.php";
 include "klassen/klassen_fibu.php";
 include "klassen/klasse_personen.php";
+include "klassen/datev_format.php";
 echo '<script src="klassen/tools_v2.js"></script>';
 
 // Funktionalität
@@ -59,18 +60,8 @@ switch ($aktion) {
         $ich->datev_einstellungen_speichern();
     break;
 
-    case 'exportieren':
+
         
-        echo 'Exportiere Buchungen<br>';
-        $buchungen = Array();
-        if($_POST["export"] == "nicht_exportiert") {
-            $buchungen = buchung::lesen_alle(nicht_exportierte: 1);
-            echo 'Buchungen';
-            echo '<pre>', print_r($buchungen), '</pre>';
-        } else {
-            $buchungen = buchung::lesen_alle(nr_von: $_POST["buchungsnummer_von"], nr_bis: $_POST["buchungsnummer_bis"]);
-        }
-        buchung::datev_export($buchungen);
         
 }
 
@@ -115,7 +106,7 @@ echo '</select></td>
 <input type="submit" value="Einstellungen speichern">
 </form>
 <hr>
-<form action="buchungen.php?aktion=exportieren" method="POST">';
+<form action="datev_export.php" target="_blank" method="POST">';
 // Zwei Radiobuttons mit den LAbeln 'Alel nicht exportierten Buchungen' und 'Buchungen zwischen den folgenden Nr.:', anschließend zwei inputfelder für die Buchungsnummern
 echo '<input type="radio" name="export" value="nicht_exportiert" checked>Alle nicht exportierten Buchungen<br>
 <input type="radio" name="export" value="buchungsnummern">Buchungen zwischen den folgenden Nr.:<br>
