@@ -1,4 +1,5 @@
 <?php
+
 class pdf_spendenquittung extends FPDF {
     private $daten;
 
@@ -142,10 +143,5 @@ class pdf_spendenquittung extends FPDF {
         $this->MultiCell(190, 4, utf8_decode($text), 0);
     }
 }
-
-
-
-
-
 
 ?>
