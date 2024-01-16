@@ -161,6 +161,7 @@ class buchung {
     public $kommentar;
     public $id_jahr;
     public $gesperrt;
+    public $exportiert;
 
     public $teilbuchungen; // Array er Objekte der Klasse teilbuchung
 
@@ -250,6 +251,7 @@ class buchung {
                 $this->datum         = $row->datum;
                 $this->kommentar     = $row->kommentar;
                 $this->gesperrt      = $row->gesperrt;
+                $this->exportiert    = $row->exportiert;
                 $this->teilbuchungen = teilbuchung::alle_zu_einer_buchung_lesen($this->ID);
             }
         }
@@ -309,7 +311,8 @@ class buchung {
                 $datev_format->add_row($datev_booking);
             }
             // An dieser Stelle die Buchung als exportiert markieren
-
+            $eintrag = "UPDATE `buchungen` Set `exportiert`='1' WHERE `ID`='".$buchung->ID."'";
+            standard_sql($eintrag, "Markieren der Buchung als exportiert");
 
         }
         $datev_format->get_zip("EXTF_gabriel_".date('d_m_Y_H_i').".csv");

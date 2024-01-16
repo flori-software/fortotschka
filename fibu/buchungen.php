@@ -171,6 +171,12 @@ if(isset($_SESSION["jahr"])) {
         <td>Nr. '.$buchung->ID.'</td><td style="width: 15%;">'.date_to_datum($buchung->datum).'</td>
         <td style="width: 40%;">'.$buchung->kommentar.'</td>
         <td>';
+        if($buchung->exportiert == 1) {
+            echo '<span style="color: black;">exportiert</span>';
+        } else {
+            echo 'nicht exportiert';
+        }
+        echo '</td><td>';
         if($buchung->gesperrt == 0) {
             echo '<a href="buchungen.php?aktion=buchung_bearbeiten&id='.$buchung->ID.'"><img src="pics/stift.png" id="stift'.$key.'"
             onmouseover="f_change_pic(\'stift'.$key.'\', \'pics/stift_selected.png\')"
